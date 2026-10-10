@@ -1,7 +1,7 @@
 {
   "name": "api-eafc-files",
   "version": "1.0.0",
-  "private": true,
+  "private": false,
   "description": "TypeScript API for reading EA FC squad and career saves without a server.",
   "type": "module",
   "engines": {

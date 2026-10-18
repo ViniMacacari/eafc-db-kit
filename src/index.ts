@@ -9,7 +9,7 @@ export { rankStandings } from './application/rank-standings.js';
 export type { RankedStanding } from './application/rank-standings.js';
 export { standingZones } from './application/standing-zones.js';
 export type { CareerData, CareerParseOptions, CareerSection, CompetitionLevel, CompetitionNode, CompetitionSetting,
-  CompetitionTask, Fixture, FixtureSide, PlayerCompetitionStats, PlayerMatchEntry, StandingEntry, StandingSplit,
+  CompetitionTask, Fixture, FixtureDecision, FixtureSide, PlayerCompetitionStats, PlayerMatchEntry, StandingEntry, StandingSplit,
   StandingZone, StandingZoneType } from './domain/career-models.js';
 export { loadTemplateMetadata } from './application/load-template-metadata.js';
 export { SUPPORTED_VERSIONS, TEMPLATE_DATABASES } from './domain/templates.js';

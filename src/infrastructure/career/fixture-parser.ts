@@ -1,7 +1,9 @@
-import type { Fixture, FixtureSide, StandingEntry } from '../../domain/career-models.js';
+import type { Fixture, FixtureDecision, FixtureSide, StandingEntry } from '../../domain/career-models.js';
 import { BinaryReader } from '../binary/binary-reader.js';
 
 export const fixtureRecordSize = 22;
+
+const decisions: readonly (FixtureDecision | null)[] = [null, 'regularTime', 'extraTime', 'penalties'];
 
 function isDate(value: number): boolean {
   const month = Math.trunc(value / 100) % 100;
@@ -13,7 +15,7 @@ function isFixtureRecord(reader: BinaryReader, offset: number, end: number, stan
   competitions: ReadonlySet<number>): boolean {
   if (offset + fixtureRecordSize > end || reader.bytes[offset] !== 0xff || reader.bytes[offset + 1] !== 0x01) return false;
   const time = reader.u16(offset + 11);
-  return reader.u8(offset + 21) <= 1 && time % 100 < 60 && time < 2400 && isDate(reader.u32(offset + 7)) &&
+  return reader.u8(offset + 21) < decisions.length && time % 100 < 60 && time < 2400 && isDate(reader.u32(offset + 7)) &&
     competitions.has(reader.u16(offset + 4)) && standings.has(reader.u16(offset + 13)) && standings.has(reader.u16(offset + 17));
 }
 
@@ -39,7 +41,8 @@ export function parseFixtures(bytes: Uint8Array, start: number, end: number, sta
       offset++;
       continue;
     }
-    const played = reader.u8(offset + 21) === 1;
+    const decision = decisions[reader.u8(offset + 21)] ?? null;
+    const played = decision !== null;
     const home = side(reader, offset + 13, played, byIndex);
     fixtures.push({
       index: reader.u16(offset + 2),
@@ -49,6 +52,7 @@ export function parseFixtures(bytes: Uint8Array, start: number, end: number, sta
       date: reader.u32(offset + 7),
       time: reader.u16(offset + 11),
       played,
+      decision,
       home,
       away: side(reader, offset + 17, played, byIndex),
     });

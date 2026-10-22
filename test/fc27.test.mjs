@@ -47,3 +47,29 @@ test('integration: reads and edits the optional local FC 27 squad without changi
   assert.equal(output.length, bytes.length);
   assert.deepEqual(await readFile(squad), bytes);
 });
+
+test('integration: transfers a player in the optional local FC 27 squad and rereads the result', {
+  skip: !existsSync(squad),
+}, async () => {
+  const bytes = await readFile(squad);
+  const file = await readEaFile(fileURLToPath(squad), { version: 'FC 27' });
+  const links = file.databases[0].tables.find(table => table.name === 'teamplayerlinks');
+  const retained = structuredClone(links.records.filter(row => row.playerid === 231747 && row.teamid !== 243));
+  const result = file.transferPlayer(231747, 1, { fromTeamId: 243 });
+  assert.equal(result.profile, 'FC 27');
+  assert.equal(result.changed, true);
+  const output = serializeEaFile(bytes, file);
+  const metadata = await loadTemplateMetadata('FC 27');
+  const decoded = parseEaFile(output, { metadata, kind: 'squad' });
+  for (const actual of decoded.databases[0].tables) {
+    const expected = file.databases[0].tables.find(table => table.name === actual.name);
+    assert.deepEqual(actual.records, expected.records);
+  }
+  const writtenLinks = decoded.databases[0].tables.find(table => table.name === 'teamplayerlinks');
+  assert.deepEqual(writtenLinks.records.filter(row => row.playerid === 231747 && row.teamid !== 1), retained);
+  assert.equal(writtenLinks.records.find(row => row.playerid === 231747 && row.teamid === 1).jerseynumber, result.jerseyNumber);
+  assert.equal(output.length, bytes.length);
+  assert.equal(decoded.databases[0].offset, file.databases[0].offset);
+  assertCrcs(output, decoded.databases[0]);
+  assert.deepEqual(await readFile(squad), bytes);
+});

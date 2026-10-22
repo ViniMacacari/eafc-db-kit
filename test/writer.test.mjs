@@ -5,36 +5,11 @@ import { tmpdir } from 'node:os';
 import { test } from 'node:test';
 import { EaFileError, loadTemplateMetadata, parseEaFile, serializeEaFile, writeEaFile } from '../dist/index.js';
 import { expectedRow, fixtureMetadata, makeDatabase, makeSave } from './fixtures.mjs';
+import { assertCrcs } from './binary-assertions.mjs';
 
 const options = { metadata: fixtureMetadata };
 const code = expected => error => error instanceof EaFileError && error.code === expected;
 const firstTable = file => file.databases[0].tables[0];
-
-function crc(bytes) {
-  let value = 0xffffffff;
-  for (const byte of bytes) {
-    value ^= byte << 24;
-    for (let bit = 0; bit < 8; bit++) value = (value << 1) ^ ((value & 0x80000000) ? 0x04c11db7 : 0);
-  }
-  return value >>> 0;
-}
-
-function assertCrcs(bytes, database) {
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  const little = database.endianness === 'little';
-  const start = database.offset, end = start + database.byteLength;
-  const base = start + 28 + database.tableCount * 8;
-  assert.equal(view.getUint32(start + 20, little), crc(bytes.subarray(start, start + 20)));
-  assert.equal(view.getUint32(base - 4, little), crc(bytes.subarray(start + 24, base - 4)));
-  const offsets = Array.from({ length: database.tableCount }, (_, index) => base + view.getUint32(start + 28 + index * 8, little)).sort((a, b) => a - b);
-  for (const [index, offset] of offsets.entries()) {
-    const tableEnd = offsets[index + 1] ?? end;
-    assert.equal(view.getUint32(offset + 32, little), crc(bytes.subarray(offset, offset + 32)));
-    assert.equal(view.getUint32(tableEnd - 4, little), crc(bytes.subarray(offset + 36, tableEnd - 4)));
-  }
-}
-
-assert.equal(crc(Buffer.from('123456789')), 0x0376e6e7);
 
 for (const big of [false, true]) {
   for (const rawStrings of [false, true]) {
@@ -283,7 +258,7 @@ test('file writes create new outputs, require explicit overwrite, and clean temp
   }
 });
 
-for (const version of ['FC 25', 'FC 26']) {
+for (const version of ['FC 25', 'FC 26', 'FC 27']) {
   for (const database of ['main', 'fut', 'localization']) {
     test(`writes and fully reads bundled ${version} ${database} without modifying its source`, async () => {
       const relative = database === 'main' ? 'fifa_ng_db.db' : database === 'fut' ? 'FUT/cards_ng_db.db' : 'loc/eng_us.db';

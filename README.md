@@ -1,6 +1,6 @@
 # eafc-db-kit
 
-A TypeScript API for reading and writing EA FC squads, career saves, and databases through JSON-compatible objects. XML descriptors and database templates are bundled in `templates/`. Reading opens inputs in read-only mode; writing creates a new output unless replacement is explicitly requested. The library does not start a server.
+A TypeScript API for reading and writing FIFA databases with external XML descriptors, plus EA FC squads, career saves, and databases through JSON-compatible objects. EA FC descriptors and database templates are bundled in `templates/`. Reading opens inputs in read-only mode; writing creates a new output unless replacement is explicitly requested. The library does not start a server.
 
 ## Installation
 
@@ -23,6 +23,44 @@ npm run check
 ```
 
 The build produces ESM JavaScript and TypeScript declarations in `dist/`. `dist/` is not committed: the `prepare` script builds it for local installs, Git installs, and packaging. Generated code has no comments. See the [publishing guide](docs/publishing.md) for package verification and npm release commands.
+
+## Choose a service
+
+| Workflow | Service | Required mapping |
+| --- | --- | --- |
+| Standalone FIFA `.db` | `FifaDatabaseService` | Matching XML supplied on every read/write |
+| EA FC squad, career, or bundled database | `EaFcFileService` | Bundled `version`/`database`, or existing generic metadata options |
+
+```ts
+import { FifaDatabaseService, EaFcFileService } from 'eafc-db-kit';
+
+const fifa = new FifaDatabaseService();
+const database = await fifa.read('C:/FIFA/custom.db', 'C:/FIFA/custom.xml', { tables: ['teams'] });
+
+const eaFc = new EaFcFileService();
+const squad = await eaFc.read('C:/saves/file.squad', { version: 'FC 27', tables: ['players'] });
+```
+
+The FIFA service validates XML coverage for every binary table and field, edits records, and writes a standalone `.db` using the original layout. It requires a supported DB signature at offset zero and does not infer the game edition. See the [FIFA database guide](docs/fifa-databases.md) for reading, editing, writing, JSON, supported layouts, and errors, and [services](docs/services.md) for the source organization and API comparison. Existing top-level EA FC functions remain available.
+
+## Read and write a FIFA database
+
+```ts
+import { FifaDatabaseService } from 'eafc-db-kit';
+
+const fifa = new FifaDatabaseService();
+const source = 'C:/FIFA/fifa_ng_db.db';
+const xml = 'C:/FIFA/fifa_ng_db-meta.xml';
+const data = await fifa.read(source, xml, { tables: ['teams'] });
+const teams = data.databases[0].tables.find(table => table.name === 'teams');
+const club = teams?.records.find(record => record.teamid === 1);
+if (!club) throw new Error('Team 1 was not found.');
+club.teamname = 'Arsenal Test';
+
+await fifa.write(source, xml, 'C:/FIFA/fifa_ng_db-edited.db', data);
+```
+
+The XML is opened read-only and stays unchanged. Existing outputs require `overwrite: true`; replacing the XML descriptor is rejected. The [runnable example](examples/edit-fifa-team.mjs) writes a new database and reopens it to verify the edited team name.
 
 ## Read a squad or career save
 
@@ -222,6 +260,12 @@ The write example also accepts `--overwrite` and `--save-integrity invalidate|pr
 
 | Function | Return value | Purpose |
 | --- | --- | --- |
+| `FifaDatabaseService` / `fifaDatabaseService` | Service class / instance | Explicit FIFA database/XML workflow |
+| `EaFcFileService` / `eaFcFileService` | Service class / instance | Existing EA FC workflows and typed templates |
+| `readFifaDatabase(dbPath, xmlPath, options?)` | `Promise<FifaDatabaseFile>` | Read a standalone database with complete XML mappings |
+| `parseFifaDatabase(bytes, xmlText, options?)` | `FifaDatabaseFile` | Decode a standalone database with XML text |
+| `writeFifaDatabase(dbPath, xmlPath, outputPath, data, options?)` | `Promise<WriteFileResult>` | Validate the pair and publish an edited database |
+| `serializeFifaDatabase(bytes, xmlText, data, options?)` | `Uint8Array` | Encode FIFA database edits without I/O |
 | `readEaFile(path, options?)` | `Promise<EaFile>` | Read a save or database using `version` |
 | `readTemplateDatabase(options)` | `Promise<EaFile>` | Read a bundled database |
 | `loadTemplateMetadata(version, database?)` | `Promise<MetadataSchema>` | Load a reusable local descriptor |
@@ -237,7 +281,7 @@ The write example also accepts `--overwrite` and `--save-integrity invalidate|pr
 
 `ReadFileOptions` includes `version`, `database`, `metadata`, `tables`, `fileName`, `kind`, and `limits`. `version` and `metadata` are mutually exclusive. `database` requires `version`. `ReadTemplateOptions` requires `version`. `ParseOptions` accepts `metadata` without loading XML files.
 
-`SerializeOptions` includes `limits` and `saveIntegrity`, defaulting to `'invalidate'`. `WriteFileOptions` also includes `overwrite`, defaulting to `false`. The write options do not accept descriptor paths or a version; descriptors come from the read result.
+The EA FC `SerializeOptions` includes `limits` and `saveIntegrity`, defaulting to `'invalidate'`. `WriteFileOptions` also includes `overwrite`, defaulting to `false`. EA FC write options do not accept descriptor paths or a version; descriptors come from the read result. The FIFA write functions instead require the original `.db` and XML path/text explicitly; their options are described in the [FIFA guide](docs/fifa-databases.md#options-limits-and-errors).
 
 ```ts
 import { EaFileError, readEaFile } from 'eafc-db-kit';
@@ -273,6 +317,8 @@ Override limits with `limits: { maxTotalRecords: 2_000_000 }`. Values must be po
 - `src/infrastructure/metadata/`: XML parsing and descriptor indexes.
 - `src/infrastructure/templates/`: bundled template path resolution.
 - `src/infrastructure/filesystem/`: read-only source access and atomic output publication.
+- `src/services/fifa/`: standalone FIFA database/XML reads, writes, and service facade.
+- `src/services/ea-fc/`: EA FC service facade preserving existing application APIs.
 - `templates/`: FC 25, FC 26, and FC 27 descriptors and databases.
 - `test/`: fixtures and integration tests using bundled templates.
 

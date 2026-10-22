@@ -27,14 +27,12 @@ const players = save.databases.flatMap(database => database.tables)
   .find(table => table.name === 'players');
 const player = players?.records.find(record => record.playerid === 158023);
 
-// playerid, overallrating, nationality, birthdate, and the other XML fields
-// are available through autocomplete. Unknown field names are type errors.
 console.log(player?.playerid, player?.overallrating);
 
 const teams = save.databases.flatMap(database => database.tables)
   .find(table => table.name === 'teams');
 const club = teams?.records.find(record => record.teamid === 1);
-console.log(club?.teamname); // string | undefined
+console.log(club?.teamname);
 ```
 
 The arrays and file structure remain read-only. Existing record values can be edited and the typed file can be passed directly to `writeEaFile` or `serializeEaFile`.
@@ -88,7 +86,7 @@ const localization = await readTemplateDatabase({ version: 'FC 25', database: 'l
 const strings = localization.databases.flatMap(database => database.tables)
   .find(table => table.name === 'LanguageStrings1');
 const entry = strings?.records.find(record => record.stringid === 'TEAMNAME_1');
-console.log(entry?.sourcetext); // string | undefined
+console.log(entry?.sourcetext);
 ```
 
 The string ID above is an example lookup; the API does not guarantee that it exists.

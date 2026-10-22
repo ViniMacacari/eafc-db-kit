@@ -1,8 +1,8 @@
 # JSON structure
 
-The enumerable data returned by `readEaFile` and `parseEaFile` contains objects, arrays, strings, finite numbers, booleans, and `null`. Results contain no `Buffer`, `BigInt`, `Map`, or record class instances. A non-enumerable `transferPlayer` method exposes [player transfers](player-transfers.md); it is omitted by JSON serialization and incremental exports.
+The enumerable data returned by `readEaFile` and `parseEaFile` contains objects, arrays, strings, finite numbers, booleans, and `null`. Results contain no `Buffer`, `BigInt`, `Map`, or record class instances. Non-enumerable `transferPlayer` and `createPlayer` methods expose [player transfers](player-transfers.md) and [player creation](player-creation.md); both are omitted by JSON serialization and incremental exports.
 
-`EaFileSnapshot` and `FifaDatabaseSnapshot` describe data without attached operations. Writers accept these snapshots. JSON imports, object spread, and `structuredClone` omit the method; use `withFileOperations(snapshot, 'FC 27')` to attach it again. The transfer profile is not persisted in JSON.
+`EaFileSnapshot` and `FifaDatabaseSnapshot` describe data without attached operations. Writers accept these snapshots. JSON imports, object spread, and `structuredClone` omit the methods; use `withFileOperations(snapshot, 'FC 27')` to attach both again. The operation profile is not persisted in JSON.
 
 This contract can also be passed to `serializeEaFile` or `writeEaFile` after editing records. Preserve field descriptors and the source envelope. The original binary is required to retain data outside the JSON contract. See [writing](writing.md) for examples and source compatibility rules. The writer does not update bookkeeping properties in the supplied object; read the output to obtain current offsets and counts.
 

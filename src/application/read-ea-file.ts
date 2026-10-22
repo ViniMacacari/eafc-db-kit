@@ -10,6 +10,7 @@ import { readOnlyFile } from '../infrastructure/filesystem/read-only-file.js';
 import { resolveTemplateFiles } from '../infrastructure/templates/template-files.js';
 import { loadTemplateMetadata } from './load-template-metadata.js';
 import { parseEaFile } from './parse-ea-file.js';
+import { withFileOperations } from '../services/file-operations/with-file-operations.js';
 
 export function readEaFile<D extends TemplateDatabase = 'main'>(path: string, options: Fc25ReadFileOptions<D>): Promise<Fc25File<D>>;
 export function readEaFile<D extends TemplateDatabase = 'main'>(path: string, options: Fc26ReadFileOptions<D>): Promise<Fc26File<D>>;
@@ -31,5 +32,6 @@ export async function readEaFile(path: string, options: ReadFileOptions = {}): P
     readOnlyFile(path, limits.maxFileBytes),
     options.version === undefined ? options.metadata : loadTemplateMetadata(options.version, options.database, limits.maxFileBytes),
   ]);
-  return parseEaFile(bytes, { ...options, fileName: options.fileName ?? basename(path), ...(metadata === undefined ? {} : { metadata }) });
+  return withFileOperations(parseEaFile(bytes, { ...options, fileName: options.fileName ?? basename(path),
+    ...(metadata === undefined ? {} : { metadata }) }), options.version ?? 'schema');
 }

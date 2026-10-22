@@ -35,6 +35,8 @@ Omit `tables` to decode all tables. Filters accept XML names or four-character b
 
 For a club transfer, read the complete file without `tables`, call `data.transferPlayer(playerId, teamId)`, and write it using the same database/XML pair. See [player transfers](player-transfers.md) for source-club selection, shirt numbers, lineup updates, and supported schemas.
 
+For a new player, read all tables and call `data.createPlayer(input, options?)`. The operation coordinates player/name registration, club links, and reserve sheets, with automatic IDs and optional position-based randomization. See [player creation](player-creation.md) for input fields, previews, and schema requirements.
+
 ```ts
 import { FifaDatabaseService } from 'eafc-db-kit';
 

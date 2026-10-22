@@ -97,7 +97,9 @@ console.log('Installed ESM imports and all six bundled template pairs passed.');
   await writeFile(join(consumer, 'consumer.mts'), `
 import { readTemplateDatabase, loadTemplateMetadata, readCareerData, writeEaFile,
   type EaFile, type EaFcVersion, type ReadTemplateOptions, type CareerData,
-  type WriteFileResult, type Fc25Record, type Fc25FieldName, type Fc25LocalizationRecords } from 'eafc-db-kit';
+  type WriteFileResult, type Fc25Record, type Fc25FieldName, type Fc25LocalizationRecords,
+  type Fc26Record, type Fc26FieldName, type Fc26TableName, type Fc26FutRecords,
+  type Fc26LocalizationRecords } from 'eafc-db-kit';
 
 export const version: EaFcVersion = 'FC 26';
 export const options = { version, tables: ['teams'] } satisfies ReadTemplateOptions;
@@ -116,6 +118,23 @@ export const rejectsUnknownTeamField:
 export const localization = await readTemplateDatabase({ version: 'FC 25', database: 'localization' });
 export const strings: readonly Fc25LocalizationRecords['LanguageStrings1'][] | undefined =
   localization.databases[0]?.tables.find(table => table.name === 'LanguageStrings1')?.records;
+
+export type Player26 = Fc26Record<'players'>;
+export const playerField26: Fc26FieldName<'players'> = 'preferredposition7';
+export const archetypesTable: Fc26TableName = 'archetypes';
+export const fc26 = await readTemplateDatabase({ version: 'FC 26', tables: ['players', 'archetypes'] });
+const players26 = fc26.databases.flatMap(db => db.tables).find(table => table.name === 'players');
+export const preferredPosition: number | undefined = players26?.records[0]?.preferredposition7;
+export const fc25RejectsFc26Fields: 'preferredposition7' extends Fc25FieldName<'players'> ? never : true = true;
+export const fut26 = await readTemplateDatabase({ version: 'FC 26', database: 'fut', tables: ['players'] });
+export const futPlayers26: readonly Fc26FutRecords['players'][] | undefined =
+  fut26.databases[0]?.tables.find(table => table.name === 'players')?.records;
+export const localization26 = await readTemplateDatabase({ version: 'FC 26', database: 'localization' });
+export const strings26: readonly Fc26LocalizationRecords['LanguageStrings1'][] | undefined =
+  localization26.databases[0]?.tables.find(table => table.name === 'LanguageStrings1')?.records;
+const metadata26 = await loadTemplateMetadata('FC 26', 'localization');
+export const localizationField26: 'hashid' | 'sourcetext' | 'stringid' | undefined =
+  metadata26.tables.find(table => table.name === 'LanguageStrings1')?.fields[0]?.name;
 `);
   await writeFile(join(consumer, 'tsconfig.json'), JSON.stringify({
     compilerOptions: { target: 'ES2023', module: 'NodeNext', strict: true, noEmit: true, types: [], lib: ['ES2023'] },

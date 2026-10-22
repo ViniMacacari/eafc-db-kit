@@ -71,15 +71,20 @@ try {
 
   await writeFile(join(consumer, 'smoke.mjs'), `
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { SUPPORTED_VERSIONS, TEMPLATE_DATABASES, loadTemplateMetadata, readTemplateDatabase,
-  readEaFile, writeEaFile, parseCareerData } from 'eafc-db-kit';
+  readEaFile, writeEaFile, parseCareerData, FifaDatabaseService, EaFcFileService, eaFcFileService,
+  readFifaDatabase, parseFifaDatabase, writeFifaDatabase, serializeFifaDatabase } from 'eafc-db-kit';
 
-for (const fn of [readEaFile, writeEaFile, parseCareerData]) assert.equal(typeof fn, 'function');
+for (const fn of [readEaFile, writeEaFile, parseCareerData, readTemplateDatabase,
+  readFifaDatabase, parseFifaDatabase, writeFifaDatabase, serializeFifaDatabase]) assert.equal(typeof fn, 'function');
+assert.ok(eaFcFileService instanceof EaFcFileService);
 for (const version of SUPPORTED_VERSIONS) {
   for (const database of TEMPLATE_DATABASES) {
     const metadata = await loadTemplateMetadata(version, database);
     assert.ok(metadata.tables.length > 0);
-    const data = await readTemplateDatabase({ version, database,
+    const data = await eaFcFileService.readTemplate({ version, database,
       tables: database === 'main' ? ['teams'] : ['__package_check_no_table__'] });
     assert.ok(data.databases.length > 0);
     assert.ok(data.metadataComplete);
@@ -90,7 +95,21 @@ for (const version of SUPPORTED_VERSIONS) {
     }
   }
 }
+const fifa = new FifaDatabaseService();
+const dbPath = fileURLToPath(new URL('../templates/FC 25/fifa_ng_db.db', import.meta.resolve('eafc-db-kit')));
+const xmlPath = fileURLToPath(new URL('../templates/FC 25/fifa_ng_db-meta.xml', import.meta.resolve('eafc-db-kit')));
+const external = await fifa.read(dbPath, xmlPath, { tables: ['teams'] });
+assert.equal(external.format, 'fifa-db');
+const team = external.databases[0].tables.find(table => table.name === 'teams').records[0];
+team.teamname = 'FIFA package test';
+const result = await fifa.write(dbPath, xmlPath, fileURLToPath(new URL('./fifa-output.db', import.meta.url)), external);
+const written = await fifa.read(result.path, xmlPath, { tables: ['teams'] });
+assert.equal(written.databases[0].tables[0].records[0].teamname, 'FIFA package test');
+assert.deepEqual(written.warnings, []);
+const bytes = await readFile(result.path), xml = await readFile(xmlPath, 'utf8');
+assert.deepEqual(Buffer.from(fifa.serialize(bytes, xml, fifa.parse(bytes, xml, { tables: ['teams'] }))), bytes);
 console.log('Installed ESM imports and all bundled template pairs passed.');
+console.log('Installed FIFA and EA FC services, external XML reads, and database writes passed.');
 `);
   process.stdout.write(execFileSync(process.execPath, ['smoke.mjs'], { cwd: consumer, encoding: 'utf8' }));
 
@@ -100,7 +119,9 @@ import { readTemplateDatabase, loadTemplateMetadata, readCareerData, writeEaFile
   type WriteFileResult, type Fc25Record, type Fc25FieldName, type Fc25LocalizationRecords,
   type Fc26Record, type Fc26FieldName, type Fc26TableName, type Fc26FutRecords,
   type Fc26LocalizationRecords, type Fc27Record, type Fc27FieldName, type Fc27TableName,
-  type Fc27File, type Fc27FutRecords, type Fc27LocalizationRecords } from 'eafc-db-kit';
+  type Fc27File, type Fc27FutRecords, type Fc27LocalizationRecords,
+  FifaDatabaseService, EaFcFileService, fifaDatabaseService, type FifaDatabaseFile,
+  type FifaReadOptions, type FifaWriteOptions } from 'eafc-db-kit';
 
 export const version: EaFcVersion = 'FC 26';
 export const options = { version, tables: ['teams'] } satisfies ReadTemplateOptions;
@@ -156,6 +177,17 @@ export const strings27: readonly Fc27LocalizationRecords['LanguageStrings1'][] |
 const metadata27 = await loadTemplateMetadata('FC 27', 'localization');
 export const localizationField27: 'hashid' | 'sourcetext' | 'stringid' | undefined =
   metadata27.tables.find(table => table.name === 'LanguageStrings1')?.fields[0]?.name;
+
+export const fifa = new FifaDatabaseService();
+export const external: FifaDatabaseFile = await fifa.read('input.db', 'input.xml');
+export const snapshotKind: 'database' = external.source.kind;
+export const snapshotFormat: 'fifa-db' = external.format;
+export const readOptions = { tables: ['players'] } satisfies FifaReadOptions;
+export const writeOptions = { overwrite: false } satisfies FifaWriteOptions;
+export const output: WriteFileResult = await fifaDatabaseService.write('input.db', 'input.xml', 'output.db', external);
+export const requiresXml: Parameters<FifaDatabaseService['read']>[1] = 'input.xml';
+export const rejectsVersionOption: 'version' extends keyof FifaReadOptions ? never : true = true;
+export const serviceFc27: Fc27File = await new EaFcFileService().read('Squads', { version: 'FC 27' });
 `);
   await writeFile(join(consumer, 'tsconfig.json'), JSON.stringify({
     compilerOptions: { target: 'ES2023', module: 'NodeNext', strict: true, noEmit: true, types: [], lib: ['ES2023'] },

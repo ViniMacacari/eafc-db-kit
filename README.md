@@ -50,6 +50,28 @@ const career = await readEaFile('C:/saves/CmMgrC20261009', {
 
 The save paths above are examples. Extensionless files are supported. `version` selects the XML descriptor explicitly; the library does not infer the game version from the filename. `source.kind` only classifies the filename and can be overridden with `kind: 'career'` or `kind: 'squad'`.
 
+### FC 25 and FC 26 autocomplete and record types
+
+Both versions include generated types for every table and field across their main, FUT, and localization XMLs. Passing a literal `version` infers the matching version and database schema:
+
+| Version | Tables | Fields | Type guide and complete catalogs |
+| --- | ---: | ---: | --- |
+| FC 25 | 454 | 17,760 | [FC 25 types](docs/fc25-types.md) |
+| FC 26 | 525 | 19,818 | [FC 26 types](docs/fc26-types.md) |
+
+```ts
+import { readEaFile, type Fc26Record } from 'eafc-db-kit';
+
+type Player = Fc26Record<'players'>;
+const save = await readEaFile('C:/saves/file.squad', { version: 'FC 26', tables: ['players'] });
+const players = save.databases.flatMap(database => database.tables)
+  .find(table => table.name === 'players');
+const player = players?.records.find(record => record.playerid === 158023);
+console.log(player?.overallrating, player?.preferredposition7);
+```
+
+The guides cover database-specific types, metadata discovery, value representations, and generation commands. Raw reads and custom descriptors retain the generic API.
+
 ### Available versions and databases
 
 | `version` | `database` | Selected XML inside `templates/` |

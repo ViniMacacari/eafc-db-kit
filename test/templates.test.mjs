@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
+import { XMLParser } from 'fast-xml-parser';
 import { EaFileError, SUPPORTED_VERSIONS, TEMPLATE_DATABASES, loadTemplateMetadata, parseEaFile,
   readEaFile, readTemplateDatabase } from '../dist/index.js';
 
@@ -14,6 +15,41 @@ const fixtures = [
   { version: 'FC 26', database: 'localization', bytes: 7273216, tables: 2, records: 100057 },
 ];
 
+async function assertTemplateSchema(version, database, decoded) {
+  const sources = { main: 'fifa_ng_db-meta.xml', fut: 'FUT/cards_ng_db-meta.xml', localization: 'loc/eng_us-meta.xml' };
+  const xml = await readFile(new URL(`../templates/${version}/${sources[database]}`, import.meta.url), 'utf8');
+  const parsed = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '' }).parse(xml);
+  const tables = new Map(parsed.database.table.map(table => [table.name, table]));
+  assert.equal(decoded.tables.length, tables.size);
+  for (const table of decoded.tables) {
+    const definition = tables.get(table.name);
+    assert.ok(definition, `Unknown ${version} table: ${table.name}`);
+    assert.equal(table.shortName, definition.shortname);
+    const xmlFields = Array.isArray(definition.fields.field) ? definition.fields.field : [definition.fields.field];
+    const fields = new Map(xmlFields.map(field => [field.name, field]));
+    assert.equal(table.fields.length, fields.size);
+    const row = table.records[0];
+    if (row) assert.deepEqual(Object.keys(row).sort(), [...fields.keys()].sort());
+    for (const field of table.fields) {
+      const definition = fields.get(field.name);
+      assert.ok(definition, `Unknown ${version} field: ${table.name}.${field.name}`);
+      assert.equal(field.shortName, definition.shortname);
+      const kind = definition.type.replace(/^DBO/, '');
+      if (kind === 'FIELDTYPE_STRING') {
+        assert.ok(['string', 'short-compressed-string', 'long-compressed-string'].includes(field.type));
+        if (row) assert.equal(typeof row[field.name], 'string');
+      } else if (kind === 'FIELDTYPE_REAL') {
+        assert.equal(field.type, 'float');
+        if (row) assert.ok(row[field.name] === null || typeof row[field.name] === 'number');
+      } else {
+        assert.ok(['FIELDTYPE_INTEGER', 'FIELDTYPE_DATE'].includes(kind));
+        assert.equal(field.type, 'integer');
+        if (row) assert.equal(typeof row[field.name], 'number');
+      }
+    }
+  }
+}
+
 for (const fixture of fixtures) {
   test(`integration: local template ${fixture.version}, ${fixture.database}`, async () => {
     const file = await readTemplateDatabase({ version: fixture.version, database: fixture.database });
@@ -23,6 +59,7 @@ for (const fixture of fixtures) {
     assert.equal(db.tables.reduce((count, table) => count + table.records.length, 0), fixture.records);
     assert.equal(file.metadataComplete, true);
     assert.deepEqual(file.warnings, []);
+    await assertTemplateSchema(fixture.version, fixture.database, db);
     if (fixture.database === 'main') {
       const teams = db.tables.find(table => table.name === 'teams');
       assert.equal(teams.records[0].teamname, 'Arsenal');

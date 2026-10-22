@@ -14,6 +14,16 @@ export type { CareerData, CareerParseOptions, CareerSection, CompetitionLevel, C
 export { loadTemplateMetadata } from './application/load-template-metadata.js';
 export { SUPPORTED_VERSIONS, TEMPLATE_DATABASES } from './domain/templates.js';
 export type { EaFcVersion, TemplateDatabase } from './domain/templates.js';
+export type { Fc25Record, Fc25TableName, Fc25FieldName, Fc25TableShortName, Fc25TableSelector,
+  Fc25Table, Fc25Database, Fc25File, Fc25Metadata, Fc25ReadFileOptions, Fc25ReadTemplateOptions } from './domain/fc25/schema.js';
+export type { Fc25MainRecords, Fc25MainTableCodes } from './domain/fc25/main.js';
+export type { Fc25FutRecords, Fc25FutTableCodes } from './domain/fc25/fut.js';
+export type { Fc25LocalizationRecords, Fc25LocalizationTableCodes } from './domain/fc25/localization.js';
+export type { Fc26Record, Fc26TableName, Fc26FieldName, Fc26TableShortName, Fc26TableSelector,
+  Fc26Table, Fc26Database, Fc26File, Fc26Metadata, Fc26ReadFileOptions, Fc26ReadTemplateOptions } from './domain/fc26/schema.js';
+export type { Fc26MainRecords, Fc26MainTableCodes } from './domain/fc26/main.js';
+export type { Fc26FutRecords, Fc26FutTableCodes } from './domain/fc26/fut.js';
+export type { Fc26LocalizationRecords, Fc26LocalizationTableCodes } from './domain/fc26/localization.js';
 export { eaFileJsonChunks } from './application/json-chunks.js';
 export { parseMetadataXml } from './infrastructure/metadata/xml-metadata.js';
 export { DEFAULT_LIMITS } from './domain/limits.js';

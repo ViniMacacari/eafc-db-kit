@@ -11,6 +11,7 @@ export type EaFileErrorCode =
   | 'LIMIT_EXCEEDED'
   | 'INVALID_TRANSFER'
   | 'INVALID_PLAYER_CREATION'
+  | 'INVALID_CLUB_CREATION'
   | 'UNSUPPORTED_OPERATION';
 
 export class EaFileError extends Error {

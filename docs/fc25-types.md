@@ -119,7 +119,7 @@ for (const field of players?.fields ?? []) {
 
 XML ranges and key attributes are listed in the catalogs. They document the descriptor and do not create numeric literal unions, foreign-key objects, or runtime validation. `XML depth` is the descriptor's bit depth; compressed strings may use a pointer in the actual binary layout. Field and table names preserve XML spelling and case, including underscores and names such as `LanguageStrings1`.
 
-The inferred types describe the selected bundled FC 25 schema. `version` selects a descriptor and does not detect or validate the game version of a source file. Custom binary layouts may omit or add fields; use the generic `ReadFileOptions`/`EaFile` contract for those inputs. FC 26, raw reads, and custom metadata keep the existing generic result types. `parseEaFile` remains generic because it accepts arbitrary bytes and descriptors. Career sections outside the databases keep their existing `CareerData` types.
+The inferred types describe the selected bundled FC 25 schema. `version` selects a descriptor and does not detect or validate the game version of a source file. Custom binary layouts may omit or add fields; use the generic `ReadFileOptions`/`EaFile` contract for those inputs. Raw reads and custom metadata keep the existing generic result types. FC 26 has its own [schema types and catalogs](fc26-types.md). `parseEaFile` remains generic because it accepts arbitrary bytes and descriptors. Career sections outside the databases keep their existing `CareerData` types.
 
 For reusable options, preserve the literal version using `satisfies`:
 

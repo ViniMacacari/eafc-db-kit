@@ -1,5 +1,6 @@
 import type { EaFcVersion } from './templates.js';
 import type { PlayerCreationOperations } from './player-creation-models.js';
+import type { ClubCreationOperations } from './club-creation-models.js';
 
 export type PlayerTransferProfile = EaFcVersion | 'fifa-db' | 'schema';
 
@@ -26,6 +27,6 @@ export interface TransferPlayerResult {
   readonly tables: readonly TransferTableChange[];
 }
 
-export interface FileOperations extends PlayerCreationOperations {
+export interface FileOperations extends PlayerCreationOperations, ClubCreationOperations {
   readonly transferPlayer: (playerId: number, teamId: number, options?: TransferPlayerOptions) => TransferPlayerResult;
 }

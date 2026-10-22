@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { test } from 'node:test';
-import { EaFileError, parseCareerData, rankStandings, readCareerData, standingZones } from '../dist/index.js';
+import { EaFileError, loadTemplateMetadata, parseCareerData, parseEaFile, rankStandings, readCareerData,
+  readEaFile, serializeEaFile, standingZones, writeEaFile } from '../dist/index.js';
 import { makeDatabase, makeSave } from './fixtures.mjs';
+import { assertCrcs } from './binary-assertions.mjs';
 
 const code = expected => error => error instanceof EaFileError && error.code === expected;
 
@@ -290,6 +292,46 @@ test('reads career data from disk with the file name', async () => {
     assert.equal(career.fixtures.length, 4);
     await assert.rejects(readCareerData(join(directory, 'missing')), code('FILE_READ_FAILED'));
   } finally {
+    assert.equal(dirname(directory).toLowerCase(), tmpdir().toLowerCase());
+    assert.ok(basename(directory).startsWith('eafc-career-'));
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test('reads and writes FC 27 databases inside a synthetic career while preserving known career sections', async () => {
+  const database = await readFile(new URL('../templates/FC 27/fifa_ng_db.db', import.meta.url));
+  const sections = makeCareer().subarray(makeSave().length);
+  const bytes = Buffer.concat([makeSave([database, database], 'FC 27 synthetic career'), sections]);
+  const directory = await mkdtemp(join(tmpdir(), 'eafc-career-'));
+  try {
+    const source = join(directory, 'CmMgrC20261022'), output = join(directory, 'CmMgrC20261022-edited');
+    await writeFile(source, bytes);
+    const data = await readEaFile(source, { version: 'FC 27', tables: ['players'] });
+    assert.equal(data.source.kind, 'career');
+    assert.equal(data.databases.length, 2);
+    assert.equal(data.metadataComplete, true);
+    assert.deepEqual(data.warnings, []);
+    assert.deepEqual(Buffer.from(serializeEaFile(bytes, data)), bytes);
+    const player = data.databases[0].tables[0].records[0];
+    player.role9 = player.role9 === 1 ? 2 : 1;
+    player.wage = 12345;
+    const before = await readCareerData(source);
+    assert.deepEqual(before.competitions, parseCareerData(makeCareer()).competitions);
+    await writeEaFile(source, output, data);
+    const written = await readFile(output);
+    const metadata = await loadTemplateMetadata('FC 27');
+    const decoded = parseEaFile(written, { metadata, tables: ['players'] });
+    assert.deepEqual(decoded.databases[0].tables[0].records[0], player);
+    assert.deepEqual(decoded.databases[1], data.databases[1]);
+    assert.deepEqual(decoded.databases.map(db => db.offset), data.databases.map(db => db.offset));
+    assert.equal(written.length, bytes.length);
+    assertCrcs(written, decoded.databases[0]);
+    assert.deepEqual(written.subarray(-sections.length), sections);
+    assert.deepEqual(parseCareerData(written), parseCareerData(bytes));
+    assert.deepEqual(await readFile(source), bytes);
+  } finally {
+    assert.equal(dirname(directory).toLowerCase(), tmpdir().toLowerCase());
+    assert.ok(basename(directory).startsWith('eafc-career-'));
     await rm(directory, { recursive: true, force: true });
   }
 });

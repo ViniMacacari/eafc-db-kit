@@ -1,6 +1,8 @@
 # Writing EA FC files
 
-The write API edits a file that the reader already understands. It accepts the original binary and an `EaFile` snapshot containing the requested record values. Both FC 25 and FC 26 templates are supported. The same entry points handle standalone databases, squads, and career saves with multiple databases.
+The EA FC write API edits a file that the reader already understands. It accepts the original binary and an `EaFile` snapshot containing the requested record values. FC 25, FC 26, and FC 27 templates are supported. The same entry points handle standalone databases, squads, and career saves with multiple databases.
+
+For an external FIFA `.db` and its matching XML, use `FifaDatabaseService.write(sourcePath, xmlPath, outputPath, data)`. This separate workflow requires the descriptor on every write and validates complete mappings. See [FIFA databases](fifa-databases.md) and [services](services.md).
 
 ## File workflow
 

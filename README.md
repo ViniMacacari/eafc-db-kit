@@ -1,6 +1,6 @@
 # eafc-db-kit
 
-A TypeScript API for reading and writing EA FC squads, career saves, and databases through JSON-compatible objects. XML descriptors and database templates are bundled in `templates/`. Reading opens inputs in read-only mode; writing creates a new output unless replacement is explicitly requested. The library does not start a server.
+A TypeScript API for reading and writing FIFA databases with external XML descriptors, plus EA FC squads, career saves, and databases through JSON-compatible objects. EA FC descriptors and database templates are bundled in `templates/`. Reading opens inputs in read-only mode; writing creates a new output unless replacement is explicitly requested. The library does not start a server.
 
 ## Installation
 
@@ -23,6 +23,44 @@ npm run check
 ```
 
 The build produces ESM JavaScript and TypeScript declarations in `dist/`. `dist/` is not committed: the `prepare` script builds it for local installs, Git installs, and packaging. Generated code has no comments. See the [publishing guide](docs/publishing.md) for package verification and npm release commands.
+
+## Choose a service
+
+| Workflow | Service | Required mapping |
+| --- | --- | --- |
+| Standalone FIFA `.db` | `FifaDatabaseService` | Matching XML supplied on every read/write |
+| EA FC squad, career, or bundled database | `EaFcFileService` | Bundled `version`/`database`, or existing generic metadata options |
+
+```ts
+import { FifaDatabaseService, EaFcFileService } from 'eafc-db-kit';
+
+const fifa = new FifaDatabaseService();
+const database = await fifa.read('C:/FIFA/custom.db', 'C:/FIFA/custom.xml', { tables: ['teams'] });
+
+const eaFc = new EaFcFileService();
+const squad = await eaFc.read('C:/saves/file.squad', { version: 'FC 27', tables: ['players'] });
+```
+
+The FIFA service validates XML coverage for every binary table and field, edits records, and writes a standalone `.db` using the original layout. It requires a supported DB signature at offset zero and does not infer the game edition. See the [FIFA database guide](docs/fifa-databases.md) for reading, editing, writing, JSON, supported layouts, and errors, and [services](docs/services.md) for the source organization and API comparison. Existing top-level EA FC functions remain available.
+
+## Read and write a FIFA database
+
+```ts
+import { FifaDatabaseService } from 'eafc-db-kit';
+
+const fifa = new FifaDatabaseService();
+const source = 'C:/FIFA/fifa_ng_db.db';
+const xml = 'C:/FIFA/fifa_ng_db-meta.xml';
+const data = await fifa.read(source, xml, { tables: ['teams'] });
+const teams = data.databases[0].tables.find(table => table.name === 'teams');
+const club = teams?.records.find(record => record.teamid === 1);
+if (!club) throw new Error('Team 1 was not found.');
+club.teamname = 'Arsenal Test';
+
+await fifa.write(source, xml, 'C:/FIFA/fifa_ng_db-edited.db', data);
+```
+
+The XML is opened read-only and stays unchanged. Existing outputs require `overwrite: true`; replacing the XML descriptor is rejected. The [runnable example](examples/edit-fifa-team.mjs) writes a new database and reopens it to verify the edited team name.
 
 ## Read a squad or career save
 
@@ -50,35 +88,38 @@ const career = await readEaFile('C:/saves/CmMgrC20261009', {
 
 The save paths above are examples. Extensionless files are supported. `version` selects the XML descriptor explicitly; the library does not infer the game version from the filename. `source.kind` only classifies the filename and can be overridden with `kind: 'career'` or `kind: 'squad'`.
 
-### FC 25 and FC 26 autocomplete and record types
+### FC 25, FC 26, and FC 27 autocomplete and record types
 
-Both versions include generated types for every table and field across their main, FUT, and localization XMLs. Passing a literal `version` infers the matching version and database schema:
+All three versions include generated types for every table and field across their main, FUT, and localization XMLs. Passing a literal `version` infers the matching version and database schema:
 
 | Version | Tables | Fields | Type guide and complete catalogs |
 | --- | ---: | ---: | --- |
 | FC 25 | 454 | 17,760 | [FC 25 types](docs/fc25-types.md) |
 | FC 26 | 525 | 19,818 | [FC 26 types](docs/fc26-types.md) |
+| FC 27 | 499 | 17,474 | [FC 27 types](docs/fc27-types.md) |
 
 ```ts
-import { readEaFile, type Fc26Record } from 'eafc-db-kit';
+import { readEaFile, type Fc27Record } from 'eafc-db-kit';
 
-type Player = Fc26Record<'players'>;
-const save = await readEaFile('C:/saves/file.squad', { version: 'FC 26', tables: ['players'] });
+type Player = Fc27Record<'players'>;
+const save = await readEaFile('C:/saves/file.squad', { version: 'FC 27', tables: ['players'] });
 const players = save.databases.flatMap(database => database.tables)
   .find(table => table.name === 'players');
 const player = players?.records.find(record => record.playerid === 158023);
-console.log(player?.overallrating, player?.preferredposition7);
+console.log(player?.overallrating, player?.role9);
 ```
 
 The guides cover database-specific types, metadata discovery, value representations, and generation commands. Raw reads and custom descriptors retain the generic API.
+
+FC 27 includes validated main, FUT, and English localization templates, generated types, and read/write checks against a real squad. Career containers are tested with FC 27 databases and synthetic career sections; a real FC 27 career save is still needed to confirm that version's career-specific layout. See the [FC 27 guide](docs/fc27-types.md).
 
 ### Available versions and databases
 
 | `version` | `database` | Selected XML inside `templates/` |
 | --- | --- | --- |
-| `'FC 25'` or `'FC 26'` | `'main'` (default) | `<version>/fifa_ng_db-meta.xml` |
-| `'FC 25'` or `'FC 26'` | `'fut'` | `<version>/FUT/cards_ng_db-meta.xml` |
-| `'FC 25'` or `'FC 26'` | `'localization'` | `<version>/loc/eng_us-meta.xml` |
+| `'FC 25'`, `'FC 26'`, or `'FC 27'` | `'main'` (default) | `<version>/fifa_ng_db-meta.xml` |
+| `'FC 25'`, `'FC 26'`, or `'FC 27'` | `'fut'` | `<version>/FUT/cards_ng_db-meta.xml` |
+| `'FC 25'`, `'FC 26'`, or `'FC 27'` | `'localization'` | `<version>/loc/eng_us-meta.xml` |
 
 The package exports immutable `SUPPORTED_VERSIONS` and `TEMPLATE_DATABASES` arrays and their corresponding `EaFcVersion` and `TemplateDatabase` types. Unknown versions or databases produce `INVALID_OPTIONS`.
 
@@ -172,6 +213,48 @@ Existing paths are rejected by default. `overwrite: true` explicitly allows repl
 
 See the [write guide](docs/writing.md) for record insertion and deletion, binary serialization, JSON import, integrity handling, validation rules, filesystem behavior, and compatibility limits.
 
+## Transfer a player
+
+```ts
+import { eaFcFileService } from 'eafc-db-kit';
+
+const source = './Squads';
+const file = await eaFcFileService.read(source, { version: 'FC 27' });
+const transfer = file.transferPlayer(231747, 1, { fromTeamId: 243 });
+await eaFcFileService.write(source, './Squads-edited', file);
+console.log(transfer);
+```
+
+Use `file.transferPlayer(playerId, teamId)` when the player has a single club membership. `fromTeamId` selects one when several club links exist. Read all tables by omitting `tables`. The operation updates club links, shirt numbers, lineups, roles, and loans in memory while preserving national memberships. Save through the usual writer.
+
+The shortcut supports EA FC 25, 26, and 27 squads/databases and compatible FIFA `.db`/XML pairs. Career transfers are not supported. See [player transfers](docs/player-transfers.md) for options, validation, JSON import, and services separated by game version.
+
+## Create a player
+
+```ts
+const result = file.createPlayer({
+  firstName: 'João', lastName: 'Silva', teamId: 1, nationality: 54,
+  position: 'GK', baseRating: 75,
+});
+```
+
+Creation allocates an unused ID by default and uses deterministic values suited to all 28 supported positions. Read all tables, then save with the usual writer. Use `{ autoGenerateId: false }` with `playerId` for a manual ID. Randomization is optional; seeds, accepted fields, numeric ranges, explicit overrides, and a `dryRun` preview are supported. Names, created-player registration, club/national links, active mirrors, and reserve sheets are handled together. Career creation is excluded.
+
+See [player creation](docs/player-creation.md) for full examples, table coverage, position profiles, and version-specific services.
+
+## Create a club
+
+```ts
+const club = file.createClub({
+  name: 'Novo FC', leagueId: 13,
+  colors: ['#123456', '#FFFFFF', '#FFCC00'],
+});
+```
+
+Supply one to three mandatory colors as hex strings or RGB objects. Club IDs and related kit, formation, league, stadium, and manager records are generated automatically, with manual overrides and a `dryRun` preview available. Read all tables and save using the usual writer. The club starts without players; use `createPlayer` or `transferPlayer` with `club.teamId` to build its roster.
+
+The shortcut supports squads and mapped standalone databases. External crests/textures and competition schedules require the game's own tooling; EA FC 25 kits need external textures. See [club creation](docs/club-creation.md) for defaults, manual kits, table coverage, version-specific services, and limits.
+
 ## JSON output and export
 
 Results contain serializable objects and arrays. For moderate output sizes:
@@ -219,6 +302,12 @@ The write example also accepts `--overwrite` and `--save-integrity invalidate|pr
 
 | Function | Return value | Purpose |
 | --- | --- | --- |
+| `FifaDatabaseService` / `fifaDatabaseService` | Service class / instance | Explicit FIFA database/XML workflow |
+| `EaFcFileService` / `eaFcFileService` | Service class / instance | Existing EA FC workflows and typed templates |
+| `readFifaDatabase(dbPath, xmlPath, options?)` | `Promise<FifaDatabaseFile>` | Read a standalone database with complete XML mappings |
+| `parseFifaDatabase(bytes, xmlText, options?)` | `FifaDatabaseFile` | Decode a standalone database with XML text |
+| `writeFifaDatabase(dbPath, xmlPath, outputPath, data, options?)` | `Promise<WriteFileResult>` | Validate the pair and publish an edited database |
+| `serializeFifaDatabase(bytes, xmlText, data, options?)` | `Uint8Array` | Encode FIFA database edits without I/O |
 | `readEaFile(path, options?)` | `Promise<EaFile>` | Read a save or database using `version` |
 | `readTemplateDatabase(options)` | `Promise<EaFile>` | Read a bundled database |
 | `loadTemplateMetadata(version, database?)` | `Promise<MetadataSchema>` | Load a reusable local descriptor |
@@ -231,10 +320,16 @@ The write example also accepts `--overwrite` and `--save-integrity invalidate|pr
 | `parseCareerData(bytes, options?)` | `CareerData` | Decode career sections without I/O |
 | `rankStandings(standings, groupId)` | `RankedStanding[]` | Rank one group by points, wins, goal difference, and goals |
 | `standingZones(career, groupId)` | `StandingZone[]` | Champion, promotion, relegation, and continental places of one group |
+| `file.transferPlayer(playerId, teamId, options?)` | `TransferPlayerResult` | Transfer a player between clubs in a squad or database in memory |
+| `withFileOperations(snapshot, profile?)` | Snapshot with `FileOperations` | Attach shortcuts to a data snapshot |
+| `PlayerTransferService` | Service class | Apply a transfer directly to a snapshot with a selected game profile |
+| `file.createPlayer(input, options?)` | `CreatePlayerResult` | Create a player and related records in a squad or database |
+| `file.createClub(input, options?)` | `CreateClubResult` | Create a club, kits, and related records in a squad or database |
+| `PlayerCreationService` | Service class | Create a player directly on a snapshot with a selected game profile |
 
 `ReadFileOptions` includes `version`, `database`, `metadata`, `tables`, `fileName`, `kind`, and `limits`. `version` and `metadata` are mutually exclusive. `database` requires `version`. `ReadTemplateOptions` requires `version`. `ParseOptions` accepts `metadata` without loading XML files.
 
-`SerializeOptions` includes `limits` and `saveIntegrity`, defaulting to `'invalidate'`. `WriteFileOptions` also includes `overwrite`, defaulting to `false`. The write options do not accept descriptor paths or a version; descriptors come from the read result.
+The EA FC `SerializeOptions` includes `limits` and `saveIntegrity`, defaulting to `'invalidate'`. `WriteFileOptions` also includes `overwrite`, defaulting to `false`. EA FC write options do not accept descriptor paths or a version; descriptors come from the read result. The FIFA write functions instead require the original `.db` and XML path/text explicitly; their options are described in the [FIFA guide](docs/fifa-databases.md#options-limits-and-errors).
 
 ```ts
 import { EaFileError, readEaFile } from 'eafc-db-kit';
@@ -248,7 +343,7 @@ try {
 }
 ```
 
-Errors include `code`, an English `message`, and a byte `offset`, or `null` when no offset applies. Read offsets are absolute positions in the source. Codes: `INVALID_OPTIONS`, `FILE_READ_FAILED`, `FILE_WRITE_FAILED`, `INVALID_WRITE`, `INVALID_METADATA`, `INVALID_FORMAT`, `TRUNCATED_FILE`, `UNSUPPORTED_FIELD_TYPE`, `INVALID_COMPRESSED_STRING`, and `LIMIT_EXCEEDED`.
+Errors include `code`, an English `message`, and a byte `offset`, or `null` when no offset applies. Read offsets are absolute positions in the source. Codes: `INVALID_OPTIONS`, `FILE_READ_FAILED`, `FILE_WRITE_FAILED`, `INVALID_WRITE`, `INVALID_METADATA`, `INVALID_FORMAT`, `TRUNCATED_FILE`, `UNSUPPORTED_FIELD_TYPE`, `INVALID_COMPRESSED_STRING`, `LIMIT_EXCEEDED`, `INVALID_TRANSFER`, `INVALID_PLAYER_CREATION`, and `UNSUPPORTED_OPERATION`.
 
 | Default limit | Value |
 | --- | ---: |
@@ -270,7 +365,12 @@ Override limits with `limits: { maxTotalRecords: 2_000_000 }`. Values must be po
 - `src/infrastructure/metadata/`: XML parsing and descriptor indexes.
 - `src/infrastructure/templates/`: bundled template path resolution.
 - `src/infrastructure/filesystem/`: read-only source access and atomic output publication.
-- `templates/`: FC 25 and FC 26 descriptors and databases.
+- `src/services/fifa/`: standalone FIFA database/XML reads, writes, and service facade.
+- `src/services/ea-fc/`: EA FC service facade preserving existing application APIs.
+- `src/services/file-operations/`: shortcuts attached to decoded files.
+- `src/services/player-transfer/`: club transfers with separate version adapters and shared roster/sheet services.
+- `src/services/player-creation/`: player creation with separate version adapters, numeric profiles, identity, names, and roster services.
+- `templates/`: FC 25, FC 26, and FC 27 descriptors and databases.
 - `test/`: fixtures and integration tests using bundled templates.
 
 The library has no mutable global state or external program dependency. TypeScript enables `strict`, `noUncheckedIndexedAccess`, and `exactOptionalPropertyTypes`. Development references: [TypeScript configuration](https://www.typescriptlang.org/tsconfig/noUncheckedIndexedAccess.html) and [Node.js test runner](https://nodejs.org/api/test.html).

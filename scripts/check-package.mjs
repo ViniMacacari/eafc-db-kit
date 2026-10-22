@@ -97,7 +97,7 @@ console.log('Installed ESM imports and all six bundled template pairs passed.');
   await writeFile(join(consumer, 'consumer.mts'), `
 import { readTemplateDatabase, loadTemplateMetadata, readCareerData, writeEaFile,
   type EaFile, type EaFcVersion, type ReadTemplateOptions, type CareerData,
-  type WriteFileResult } from 'eafc-db-kit';
+  type WriteFileResult, type Fc25Record, type Fc25FieldName, type Fc25LocalizationRecords } from 'eafc-db-kit';
 
 export const version: EaFcVersion = 'FC 26';
 export const options = { version, tables: ['teams'] } satisfies ReadTemplateOptions;
@@ -105,6 +105,17 @@ export const data: EaFile = await readTemplateDatabase(options);
 export const metadata = await loadTemplateMetadata(version);
 export const readCareer: (path: string) => Promise<CareerData> = readCareerData;
 export const write: (source: string, output: string, data: EaFile) => Promise<WriteFileResult> = writeEaFile;
+
+export type Player = Fc25Record<'players'>;
+export const playerField: Fc25FieldName<'players'> = 'overallrating';
+export const fc25 = await readTemplateDatabase({ version: 'FC 25', tables: ['teams'] });
+const teams = fc25.databases.flatMap(db => db.tables).find(table => table.name === 'teams');
+export const teamName: string | undefined = teams?.records[0]?.teamname;
+// @ts-expect-error Generated records reject unknown field names.
+teams?.records[0]?.teamnane;
+export const localization = await readTemplateDatabase({ version: 'FC 25', database: 'localization' });
+export const strings: readonly Fc25LocalizationRecords['LanguageStrings1'][] | undefined =
+  localization.databases[0]?.tables.find(table => table.name === 'LanguageStrings1')?.records;
 `);
   await writeFile(join(consumer, 'tsconfig.json'), JSON.stringify({
     compilerOptions: { target: 'ES2023', module: 'NodeNext', strict: true, noEmit: true, types: [], lib: ['ES2023'] },

@@ -242,6 +242,19 @@ Creation allocates an unused ID by default and uses deterministic values suited 
 
 See [player creation](docs/player-creation.md) for full examples, table coverage, position profiles, and version-specific services.
 
+## Create a club
+
+```ts
+const club = file.createClub({
+  name: 'Novo FC', leagueId: 13,
+  colors: ['#123456', '#FFFFFF', '#FFCC00'],
+});
+```
+
+Supply one to three mandatory colors as hex strings or RGB objects. Club IDs and related kit, formation, league, stadium, and manager records are generated automatically, with manual overrides and a `dryRun` preview available. Read all tables and save using the usual writer. The club starts without players; use `createPlayer` or `transferPlayer` with `club.teamId` to build its roster.
+
+The shortcut supports squads and mapped standalone databases. External crests/textures and competition schedules require the game's own tooling; EA FC 25 kits need external textures. See [club creation](docs/club-creation.md) for defaults, manual kits, table coverage, version-specific services, and limits.
+
 ## JSON output and export
 
 Results contain serializable objects and arrays. For moderate output sizes:
@@ -311,6 +324,7 @@ The write example also accepts `--overwrite` and `--save-integrity invalidate|pr
 | `withFileOperations(snapshot, profile?)` | Snapshot with `FileOperations` | Attach shortcuts to a data snapshot |
 | `PlayerTransferService` | Service class | Apply a transfer directly to a snapshot with a selected game profile |
 | `file.createPlayer(input, options?)` | `CreatePlayerResult` | Create a player and related records in a squad or database |
+| `file.createClub(input, options?)` | `CreateClubResult` | Create a club, kits, and related records in a squad or database |
 | `PlayerCreationService` | Service class | Create a player directly on a snapshot with a selected game profile |
 
 `ReadFileOptions` includes `version`, `database`, `metadata`, `tables`, `fileName`, `kind`, and `limits`. `version` and `metadata` are mutually exclusive. `database` requires `version`. `ReadTemplateOptions` requires `version`. `ParseOptions` accepts `metadata` without loading XML files.

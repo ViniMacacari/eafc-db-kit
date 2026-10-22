@@ -10,6 +10,7 @@ export type EaFileErrorCode =
   | 'FILE_WRITE_FAILED'
   | 'LIMIT_EXCEEDED'
   | 'INVALID_TRANSFER'
+  | 'INVALID_PLAYER_CREATION'
   | 'UNSUPPORTED_OPERATION';
 
 export class EaFileError extends Error {

@@ -76,6 +76,8 @@ Decoded files also expose `file.transferPlayer(playerId, teamId, options?)`. Thi
 
 `file.createPlayer(input, options?)` creates complete player and related name/roster records with optional ID generation and selective seeded randomization. It has its own `player-creation/` directory and FC 25/26/27/FIFA adapters. See [player creation](player-creation.md) for profiles, previews, table coverage, and saving.
 
+`file.createClub(input, options?)` creates club, kit, formation, league, stadium, manager, and tactical records with automatic or manual IDs. One to three club colors are required. The separate `club-creation/` directory contains FC 25/26/27/FIFA adapters and services for kits, tactics, and club relationships. See [club creation](club-creation.md) for previews, manual options, asset requirements, and saving. Player and club services share a low-level staged record plan in `services/shared/`; their game policies remain separate.
+
 ```text
 src/services/
   fifa/

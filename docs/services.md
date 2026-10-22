@@ -74,6 +74,8 @@ Existing top-level EA FC functions remain available. The new `readFifaDatabase`,
 
 Decoded files also expose `file.transferPlayer(playerId, teamId, options?)`. This shortcut supports squads and standalone databases, requires all tables to be read, and changes data in memory before an explicit write. See [player transfers](player-transfers.md) for its contract and version-specific service organization. Career transfers are excluded.
 
+`file.createPlayer(input, options?)` creates complete player and related name/roster records with optional ID generation and selective seeded randomization. It has its own `player-creation/` directory and FC 25/26/27/FIFA adapters. See [player creation](player-creation.md) for profiles, previews, table coverage, and saving.
+
 ```text
 src/services/
   fifa/
@@ -94,9 +96,17 @@ src/services/
     fc27/
     fifa/
     shared/
+  player-creation/
+    player-creation-service.ts
+    fc25/
+    fc26/
+    fc27/
+    fifa/
+    shared/
 src/domain/
   fifa-models.ts
   transfer-models.ts
+  player-creation-models.ts
 src/infrastructure/
   metadata/fifa-database-metadata.ts
   binary/

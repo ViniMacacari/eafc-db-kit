@@ -5,6 +5,7 @@ import type { EaWarning } from '../../domain/models.js';
 import { parseDatabase } from '../../infrastructure/binary/database-parser.js';
 import { fifaMetadata, inspectFifaDatabase } from '../../infrastructure/metadata/fifa-database-metadata.js';
 import { fifaOptions } from './database-inputs.js';
+import { withFileOperations } from '../file-operations/with-file-operations.js';
 
 export function parseFifaDatabase(bytes: Uint8Array, xml: string, options: FifaParseOptions = {}): FifaDatabaseFile {
   fifaOptions(options, ['fileName', 'tables', 'limits']);
@@ -19,7 +20,8 @@ export function parseFifaDatabase(bytes: Uint8Array, xml: string, options: FifaP
   const warnings: EaWarning[] = [];
   const database = parseDatabase(bytes, 0, 0, metadata, new DecodeBudget(limits), warnings,
     options.tables === undefined ? undefined : new Set(options.tables));
-  return { format: 'fifa-db', formatVersion: 1,
+  return withFileOperations({ format: 'fifa-db' as const, formatVersion: 1 as const,
     source: { fileName: options.fileName ?? null, byteLength: bytes.length, kind: 'database' },
-    container: 'database', inGameName: null, metadataComplete: true, databases: [database], warnings };
+    container: 'database', inGameName: null, metadataComplete: true,
+    databases: [database] as const, warnings }, 'fifa-db');
 }

@@ -15,15 +15,15 @@ const fixtures = [
   { version: 'FC 26', database: 'localization', bytes: 7273216, tables: 2, records: 100057 },
 ];
 
-async function assertFc25Schema(database, decoded) {
+async function assertTemplateSchema(version, database, decoded) {
   const sources = { main: 'fifa_ng_db-meta.xml', fut: 'FUT/cards_ng_db-meta.xml', localization: 'loc/eng_us-meta.xml' };
-  const xml = await readFile(new URL(`../templates/FC 25/${sources[database]}`, import.meta.url), 'utf8');
+  const xml = await readFile(new URL(`../templates/${version}/${sources[database]}`, import.meta.url), 'utf8');
   const parsed = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '' }).parse(xml);
   const tables = new Map(parsed.database.table.map(table => [table.name, table]));
   assert.equal(decoded.tables.length, tables.size);
   for (const table of decoded.tables) {
     const definition = tables.get(table.name);
-    assert.ok(definition, `Unknown FC 25 table: ${table.name}`);
+    assert.ok(definition, `Unknown ${version} table: ${table.name}`);
     assert.equal(table.shortName, definition.shortname);
     const xmlFields = Array.isArray(definition.fields.field) ? definition.fields.field : [definition.fields.field];
     const fields = new Map(xmlFields.map(field => [field.name, field]));
@@ -32,7 +32,7 @@ async function assertFc25Schema(database, decoded) {
     if (row) assert.deepEqual(Object.keys(row).sort(), [...fields.keys()].sort());
     for (const field of table.fields) {
       const definition = fields.get(field.name);
-      assert.ok(definition, `Unknown FC 25 field: ${table.name}.${field.name}`);
+      assert.ok(definition, `Unknown ${version} field: ${table.name}.${field.name}`);
       assert.equal(field.shortName, definition.shortname);
       const kind = definition.type.replace(/^DBO/, '');
       if (kind === 'FIELDTYPE_STRING') {
@@ -59,7 +59,7 @@ for (const fixture of fixtures) {
     assert.equal(db.tables.reduce((count, table) => count + table.records.length, 0), fixture.records);
     assert.equal(file.metadataComplete, true);
     assert.deepEqual(file.warnings, []);
-    if (fixture.version === 'FC 25') await assertFc25Schema(fixture.database, db);
+    await assertTemplateSchema(fixture.version, fixture.database, db);
     if (fixture.database === 'main') {
       const teams = db.tables.find(table => table.name === 'teams');
       assert.equal(teams.records[0].teamname, 'Arsenal');

@@ -8,6 +8,26 @@ import { assertCrcs } from './binary-assertions.mjs';
 
 const squad = new URL('../dev/Squads fc27/Squads20261010103923955', import.meta.url);
 
+test('integration: creates a club and roster in the optional local FC 27 squad and rereads every record', {
+  skip: !existsSync(squad),
+}, async () => {
+  const bytes = await readFile(squad);
+  const file = await readEaFile(fileURLToPath(squad), { version: 'FC 27' });
+  const club = file.createClub({ name: 'Validation FC', leagueId: 13, colors: ['#123456', '#FFFFFF', '#FFCC00'], stadiumName: 'New Arena' });
+  const player = file.createPlayer({ firstName: 'New', lastName: 'Player', teamId: club.teamId, nationality: 54, position: 'GK' });
+  file.transferPlayer(231747, club.teamId, { fromTeamId: 243 });
+  const output = serializeEaFile(bytes, file), metadata = await loadTemplateMetadata('FC 27');
+  const decoded = parseEaFile(output, { metadata, kind: 'squad' });
+  for (const actual of decoded.databases[0].tables) {
+    assert.deepEqual(actual.records, file.databases[0].tables.find(t => t.name === actual.name).records);
+  }
+  assert.equal(decoded.databases[0].tables.find(t => t.name === 'teamplayerlinks').records.filter(r => r.teamid === club.teamId).length, 2);
+  assert.equal(player.teamId, club.teamId);
+  assert.equal(output.length, bytes.length); assert.equal(decoded.databases[0].offset, file.databases[0].offset);
+  assert.deepEqual(decoded.warnings, []); assertCrcs(output, decoded.databases[0]);
+  assert.deepEqual(await readFile(squad), bytes);
+});
+
 test('integration: reads and edits the optional local FC 27 squad without changing its source', {
   skip: !existsSync(squad),
 }, async () => {

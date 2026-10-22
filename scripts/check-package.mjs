@@ -76,13 +76,15 @@ import { fileURLToPath } from 'node:url';
 import { SUPPORTED_VERSIONS, TEMPLATE_DATABASES, loadTemplateMetadata, readTemplateDatabase,
   readEaFile, writeEaFile, parseCareerData, FifaDatabaseService, EaFcFileService, eaFcFileService,
   readFifaDatabase, parseFifaDatabase, writeFifaDatabase, serializeFifaDatabase,
-  PlayerTransferService, withFileOperations } from 'eafc-db-kit';
+  PlayerTransferService, PlayerCreationService, PLAYER_POSITIONS, withFileOperations } from 'eafc-db-kit';
 
 for (const fn of [readEaFile, writeEaFile, parseCareerData, readTemplateDatabase,
   readFifaDatabase, parseFifaDatabase, writeFifaDatabase, serializeFifaDatabase]) assert.equal(typeof fn, 'function');
 assert.ok(eaFcFileService instanceof EaFcFileService);
 assert.equal(typeof withFileOperations, 'function');
 assert.equal(typeof new PlayerTransferService().transfer, 'function');
+assert.equal(typeof new PlayerCreationService().create, 'function');
+assert.equal(PLAYER_POSITIONS.GK, 0);
 for (const version of SUPPORTED_VERSIONS) {
   for (const database of TEMPLATE_DATABASES) {
     const metadata = await loadTemplateMetadata(version, database);
@@ -93,6 +95,7 @@ for (const version of SUPPORTED_VERSIONS) {
     assert.ok(data.metadataComplete);
     assert.deepEqual(data.warnings, []);
     assert.equal(typeof data.transferPlayer, 'function');
+    assert.equal(typeof data.createPlayer, 'function');
     assert.equal(Object.keys(data).includes('transferPlayer'), false);
     if (database === 'main') {
       const teams = data.databases.flatMap(db => db.tables).find(table => table.name === 'teams');
@@ -108,6 +111,10 @@ assert.equal(external.format, 'fifa-db');
 const transfer = external.transferPlayer(231747, 1, { fromTeamId: 243 });
 assert.equal(transfer.profile, 'fifa-db');
 assert.equal(transfer.changed, true);
+const created = external.createPlayer({ firstName: 'Package', lastName: 'Player', teamId: 1, nationality: 54,
+  position: 'GK' }, { randomize: { seed: 42 } });
+assert.equal(created.created, true);
+assert.equal(created.profile, 'fifa-db');
 const team = external.databases[0].tables.find(table => table.name === 'teams').records[0];
 team.teamname = 'FIFA package test';
 const result = await fifa.write(dbPath, xmlPath, fileURLToPath(new URL('./fifa-output.db', import.meta.url)), external);
@@ -116,12 +123,16 @@ assert.equal(written.databases[0].tables.find(table => table.name === 'teams').r
 const membership = written.databases[0].tables.find(table => table.name === 'teamplayerlinks')
   .records.find(row => row.playerid === 231747 && row.teamid === 1);
 assert.equal(membership.jerseynumber, transfer.jerseyNumber);
+const createdMembership = written.databases[0].tables.find(table => table.name === 'teamplayerlinks')
+  .records.find(row => row.playerid === created.playerId && row.teamid === 1);
+assert.equal(createdMembership.jerseynumber, created.jerseyNumber);
 assert.deepEqual(written.warnings, []);
 const bytes = await readFile(result.path), xml = await readFile(xmlPath, 'utf8');
 assert.deepEqual(Buffer.from(fifa.serialize(bytes, xml, fifa.parse(bytes, xml, { tables: ['teams'] }))), bytes);
 console.log('Installed ESM imports and all bundled template pairs passed.');
 console.log('Installed FIFA and EA FC services, external XML reads, and database writes passed.');
 console.log('Installed file operations and player transfer write/read passed.');
+console.log('Installed player creation and linked roster write/read passed.');
 `);
   process.stdout.write(execFileSync(process.execPath, ['smoke.mjs'], { cwd: consumer, encoding: 'utf8' }));
 
@@ -135,7 +146,8 @@ import { readTemplateDatabase, loadTemplateMetadata, readCareerData, writeEaFile
   FifaDatabaseService, EaFcFileService, fifaDatabaseService, type FifaDatabaseFile,
   type FifaReadOptions, type FifaWriteOptions, type EaFileSnapshot, type FifaDatabaseSnapshot,
   type FileOperations, type TransferPlayerOptions, type TransferPlayerResult,
-  PlayerTransferService, withFileOperations } from 'eafc-db-kit';
+  PlayerTransferService, PlayerCreationService, PLAYER_POSITIONS, withFileOperations,
+  type CreatePlayerInput, type CreatePlayerOptions, type CreatePlayerResult } from 'eafc-db-kit';
 
 export const version: EaFcVersion = 'FC 26';
 export const options = { version, tables: ['teams'] } satisfies ReadTemplateOptions;
@@ -210,6 +222,12 @@ export const fifaSnapshot: FifaDatabaseSnapshot = external;
 export const hydrated = withFileOperations(snapshot, 'FC 27');
 export const serviceTransfer: TransferPlayerResult = new PlayerTransferService('FC 27').transfer(snapshot, 231747, 1);
 export const writeSnapshot: (source: string, output: string, data: EaFileSnapshot) => Promise<WriteFileResult> = writeEaFile;
+export const playerInput = { firstName: 'New', lastName: 'Player', teamId: 1, nationality: 54,
+  position: 'GK' } satisfies CreatePlayerInput;
+export const creationOptions = { autoGenerateId: true, randomize: { seed: 42, fields: ['gkreflexes'] } } satisfies CreatePlayerOptions;
+export const created: CreatePlayerResult = serviceFc27.createPlayer(playerInput, creationOptions);
+export const creationService: CreatePlayerResult = new PlayerCreationService('FC 27').create(snapshot, playerInput);
+export const goalkeeperId: 0 = PLAYER_POSITIONS.GK;
 `);
   await writeFile(join(consumer, 'tsconfig.json'), JSON.stringify({
     compilerOptions: { target: 'ES2023', module: 'NodeNext', strict: true, noEmit: true, types: [], lib: ['ES2023'] },

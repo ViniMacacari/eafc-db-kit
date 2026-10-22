@@ -2,7 +2,7 @@
 
 Integration tests use bundled `templates/` files without external paths. [validation.json](validation.json) records current SHA-256 checksums.
 
-On October 22, 2026, `npm run check` passed type checking, compilation, and **120 tests**, with no failures or skipped tests, including the optional local FC 27 squad, separate FIFA database services, and player transfers. `npm run check:package` checks the installed package's runtime imports and TypeScript declarations for all three FC versions, FIFA database/XML reads and writes, file services, player transfers, and the template, documentation, and example inventory.
+On October 22, 2026, `npm run check` passed type checking, compilation, and **146 tests**, with no failures or skipped tests, including the optional local FC 27 squad, separate FIFA database services, player transfers, and player creation. `npm run check:package` checks the installed package's runtime imports and TypeScript declarations for all three FC versions, FIFA database/XML reads and writes, file services, transfers, creation, and the template, documentation, and example inventory.
 
 | Version | Database | Bytes | Tables | Valid records |
 | --- | --- | ---: | ---: | ---: |
@@ -27,6 +27,8 @@ All databases were fully decoded using matching XML descriptors, with complete m
 - Separate FIFA/EA FC service contracts and preserved literal-version inference.
 - Player transfers with version-specific adapters, club/national memberships, shirt numbers, source selection, lineups, tactical player references, roles, loans, mirror links, and validation before changes are applied.
 - Transfer serialization with both byte orders, standalone database/XML pairs, squad containers, JSON snapshots, and the installed npm package.
+- Player creation with all 28 position profiles, deterministic defaults, automatic/manual IDs, referenced and appearance asset IDs, names, created-player registration, CP morphs, reserve sheets, active mirrors, and optional national membership.
+- Selective seeded randomization, numeric ranges, explicit overrides, previews, gender, extreme ratings, unchanged input on validation failures, and creation followed by a transfer.
 - Complete reads of all nine bundled databases and comparison of every binary table and field with the matching XML descriptor.
 - Generated record types, metadata inference, database-specific options, and field/table differences across FC 25, FC 26, and FC 27.
 - Template resolution from different working directories.
@@ -79,6 +81,12 @@ No real FC 27 career save was supplied. This test covers the known container and
 Transfer integration tests move player `231747` from team `243` to team `1` in the bundled FC 25, FC 26, and FC 27 main databases. Each result is serialized and reread; all changed table records and the player record are compared, retained memberships are checked, and independent CRC calculations validate the output. Source database bytes remain unchanged. The optional real FC 27 squad receives the same transfer, with every table's records compared after writing and its container length and database offset preserved.
 
 Synthetic fixtures exercise mapped FIFA `.db`/XML pairs and squad containers in both byte orders, including removal of a loan and updates to mirror links and tactical sheets. Validation tests check that errors leave the input unchanged. The package checker transfers through an installed package and verifies the written destination membership. See [player transfers](player-transfers.md) for supported tables and limits. Career transfers and loading edited transfers in the game have not been verified or enabled.
+
+## Player creation
+
+Creation tests insert a player into each bundled FC 25/26/27 main database, serialize it, and reread every affected table. They verify player/name/roster registrations and independent CRCs while retaining the source bytes. The optional real FC 27 squad test creates a goalkeeper, rereads every table's records, and verifies the file length, embedded database offset, and source bytes.
+
+Synthetic fixtures cover both byte orders for standalone databases, FIFA/XML pairs, and squad containers. They exercise CP appearance records using copied donor morphs or neutral values, unique player/head IDs, explicit names, populated and inactive mirrors, reserves, national teams, previews, numeric bounds, and failures before application. The installed package checker creates a player through `FifaDatabaseService`, writes the database, and verifies the new destination link. See [player creation](player-creation.md) for the exact table policy, ID behavior, and numerical profiles. Game-engine loading and career creation are not validated.
 
 ## Evidence limits
 

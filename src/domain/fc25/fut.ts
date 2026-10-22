@@ -1,6 +1,3 @@
-// Generated from templates/FC 25/FUT/cards_ng_db-meta.xml. Do not edit by hand.
-// Regenerate with npm run generate:fc25.
-
 export type Fc25FutRecords = {
   "AudioDeactivatedStories": {
     "commentaryTeam": number;

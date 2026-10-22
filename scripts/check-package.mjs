@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { access, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -90,7 +90,7 @@ for (const version of SUPPORTED_VERSIONS) {
     }
   }
 }
-console.log('Installed ESM imports and all six bundled template pairs passed.');
+console.log('Installed ESM imports and all bundled template pairs passed.');
 `);
   process.stdout.write(execFileSync(process.execPath, ['smoke.mjs'], { cwd: consumer, encoding: 'utf8' }));
 
@@ -99,7 +99,8 @@ import { readTemplateDatabase, loadTemplateMetadata, readCareerData, writeEaFile
   type EaFile, type EaFcVersion, type ReadTemplateOptions, type CareerData,
   type WriteFileResult, type Fc25Record, type Fc25FieldName, type Fc25LocalizationRecords,
   type Fc26Record, type Fc26FieldName, type Fc26TableName, type Fc26FutRecords,
-  type Fc26LocalizationRecords } from 'eafc-db-kit';
+  type Fc26LocalizationRecords, type Fc27Record, type Fc27FieldName, type Fc27TableName,
+  type Fc27File, type Fc27FutRecords, type Fc27LocalizationRecords } from 'eafc-db-kit';
 
 export const version: EaFcVersion = 'FC 26';
 export const options = { version, tables: ['teams'] } satisfies ReadTemplateOptions;
@@ -135,6 +136,26 @@ export const strings26: readonly Fc26LocalizationRecords['LanguageStrings1'][] |
 const metadata26 = await loadTemplateMetadata('FC 26', 'localization');
 export const localizationField26: 'hashid' | 'sourcetext' | 'stringid' | undefined =
   metadata26.tables.find(table => table.name === 'LanguageStrings1')?.fields[0]?.name;
+
+export type Player27 = Fc27Record<'players'>;
+export const playerField27: Fc27FieldName<'players'> = 'role9';
+export const vipPlayersTable: Fc27TableName = 'vipplayers';
+export const fc27 = await readTemplateDatabase({ version: 'FC 27', tables: ['players', 'vipplayers'] });
+export const typed27: Fc27File = fc27;
+const players27 = fc27.databases.flatMap(db => db.tables).find(table => table.name === 'players');
+export const role27: number | undefined = players27?.records[0]?.role9;
+export const wage27: number | undefined = players27?.records[0]?.wage;
+export const fc26RejectsFc27Fields: 'role9' extends Fc26FieldName<'players'> ? never : true = true;
+export const fc27RejectsRemovedCareerTable: 'career_managerinfo' extends Fc27TableName ? never : true = true;
+export const fut27 = await readTemplateDatabase({ version: 'FC 27', database: 'fut', tables: ['players'] });
+export const futPlayers27: readonly Fc27FutRecords['players'][] | undefined =
+  fut27.databases[0]?.tables.find(table => table.name === 'players')?.records;
+export const localization27 = await readTemplateDatabase({ version: 'FC 27', database: 'localization' });
+export const strings27: readonly Fc27LocalizationRecords['LanguageStrings1'][] | undefined =
+  localization27.databases[0]?.tables.find(table => table.name === 'LanguageStrings1')?.records;
+const metadata27 = await loadTemplateMetadata('FC 27', 'localization');
+export const localizationField27: 'hashid' | 'sourcetext' | 'stringid' | undefined =
+  metadata27.tables.find(table => table.name === 'LanguageStrings1')?.fields[0]?.name;
 `);
   await writeFile(join(consumer, 'tsconfig.json'), JSON.stringify({
     compilerOptions: { target: 'ES2023', module: 'NodeNext', strict: true, noEmit: true, types: [], lib: ['ES2023'] },
@@ -146,6 +167,8 @@ export const localizationField26: 'hashid' | 'sourcetext' | 'stringid' | undefin
   execFileSync(process.execPath, [compiler, '-p', join(consumer, 'tsconfig.json')], { cwd: consumer, stdio: 'inherit' });
   console.log('Installed TypeScript declarations passed without development dependencies.');
 } finally {
+  assert.equal(dirname(consumer).toLowerCase(), tmpdir().toLowerCase());
+  assert.ok(basename(consumer).startsWith('eafc-db-kit-consumer-'));
   await rm(consumer, { recursive: true, force: true, maxRetries: 3 });
 }
 

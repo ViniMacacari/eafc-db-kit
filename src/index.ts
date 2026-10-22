@@ -24,6 +24,11 @@ export type { Fc26Record, Fc26TableName, Fc26FieldName, Fc26TableShortName, Fc26
 export type { Fc26MainRecords, Fc26MainTableCodes } from './domain/fc26/main.js';
 export type { Fc26FutRecords, Fc26FutTableCodes } from './domain/fc26/fut.js';
 export type { Fc26LocalizationRecords, Fc26LocalizationTableCodes } from './domain/fc26/localization.js';
+export type { Fc27Record, Fc27TableName, Fc27FieldName, Fc27TableShortName, Fc27TableSelector,
+  Fc27Table, Fc27Database, Fc27File, Fc27Metadata, Fc27ReadFileOptions, Fc27ReadTemplateOptions } from './domain/fc27/schema.js';
+export type { Fc27MainRecords, Fc27MainTableCodes } from './domain/fc27/main.js';
+export type { Fc27FutRecords, Fc27FutTableCodes } from './domain/fc27/fut.js';
+export type { Fc27LocalizationRecords, Fc27LocalizationTableCodes } from './domain/fc27/localization.js';
 export { eaFileJsonChunks } from './application/json-chunks.js';
 export { parseMetadataXml } from './infrastructure/metadata/xml-metadata.js';
 export { DEFAULT_LIMITS } from './domain/limits.js';

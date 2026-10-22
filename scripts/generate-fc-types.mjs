@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { XMLParser, XMLValidator } from 'fast-xml-parser';
 
 export async function generateFcTypes(year) {
-  assert.ok(year === 25 || year === 26, 'Only FC 25 and FC 26 are supported.');
+  assert.ok([25, 26, 27].includes(year), 'Only FC 25, FC 26, and FC 27 are supported.');
   const root = fileURLToPath(new URL('../', import.meta.url));
   const check = process.argv.includes('--check');
   assert.ok(process.argv.slice(2).every(arg => arg === '--check'), 'Only --check is supported.');

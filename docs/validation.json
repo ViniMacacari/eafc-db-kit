@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-09",
+  "date": "2026-10-22",
   "node": "v24.15.0",
   "resources": [
     {
@@ -85,6 +85,53 @@
       "records": 100057,
       "metadataComplete": true,
       "warnings": 0
+    },
+    {
+      "id": "fc27-main",
+      "version": "FC 27",
+      "database": "main",
+      "path": "templates/FC 27/fifa_ng_db.db",
+      "xmlPath": "templates/FC 27/fifa_ng_db-meta.xml",
+      "byteLength": 16206784,
+      "sha256": "92938136ad6a0e1ba272cecf5df07ddc2a38bbe18913df5c5b253206acb18641",
+      "metadataSha256": "696a2d9dfdbc5915288bad017c292f74c6d6257c92acd9a49a20eb418de13455",
+      "tables": 268,
+      "records": 245469,
+      "metadataComplete": true,
+      "warnings": 0
+    },
+    {
+      "id": "fc27-fut",
+      "version": "FC 27",
+      "database": "fut",
+      "path": "templates/FC 27/FUT/cards_ng_db.db",
+      "xmlPath": "templates/FC 27/FUT/cards_ng_db-meta.xml",
+      "byteLength": 15654852,
+      "sha256": "f4c81cb5fbb43104e08d3818f476d7b940f9cf319d776c6948fde24e5fbf977b",
+      "metadataSha256": "482aa4ba7bf5a3321929a3df6095194739eb8b87420bc8dedfd00111879ef4e6",
+      "tables": 229,
+      "records": 214004,
+      "metadataComplete": true,
+      "warnings": 0
+    },
+    {
+      "id": "fc27-loc",
+      "version": "FC 27",
+      "database": "localization",
+      "path": "templates/FC 27/loc/eng_us.db",
+      "xmlPath": "templates/FC 27/loc/eng_us-meta.xml",
+      "byteLength": 8537808,
+      "sha256": "37e384f814642cfb9701ab6a073b438668879958f7a37a2fe2ea2600c74caa92",
+      "metadataSha256": "af08659e6c47ac44906a3120bdd978843800a2171280914675b5c69634789d25",
+      "tables": 2,
+      "records": 115843,
+      "metadataComplete": true,
+      "warnings": 0,
+      "source": {
+        "path": "dev/loc/eng_us.db",
+        "sha256": "ebcbc974e0b02e4260c637db4e94e422774d615cb2671706ae0e5de998052c2d",
+        "transformation": "AES-256-CBC decoding without padding removal; bundled as an unencrypted DB template"
+      }
     }
   ],
   "auxiliaryFiles": [
@@ -96,32 +143,82 @@
   ],
   "check": {
     "command": "npm run check",
-    "tests": 60,
-    "passed": 60,
+    "tests": 80,
+    "passed": 80,
     "failed": 0,
     "skipped": 0
   },
   "packageCheck": {
-    "command": "npm pack --dry-run --json",
-    "importedTemplateFiles": 13,
+    "command": "npm run check:package",
+    "importedTemplateFiles": 19,
     "allTemplatesIncluded": true,
-    "allExamplesIncluded": true
+    "allExamplesIncluded": true,
+    "allDocsIncluded": true,
+    "installedRuntimeVerified": true,
+    "installedTypeDeclarationsVerified": [
+      "FC 25",
+      "FC 26",
+      "FC 27"
+    ]
   },
   "writing": {
-    "binaryWriteTests": 26,
+    "binaryWriteTests": 29,
     "jsonImportExampleTests": 1,
-    "fullyDecodedTemplateRoundTrips": 6,
-    "endianness": ["little", "big"],
+    "fullyDecodedTemplateRoundTrips": 9,
+    "endianness": [
+      "little",
+      "big"
+    ],
     "sourceTemplatesPreserved": true,
     "saveDatabaseOffsetsPreserved": true,
     "localSaveSmokeChecks": {
       "samples": 3,
-      "kinds": ["squad", "online-squad", "career"],
+      "kinds": [
+        "squad",
+        "online-squad",
+        "career"
+      ],
       "sourceFilesPreserved": true,
       "fileLengthsPreserved": true,
       "originalTableCrcChecks": 474,
       "originalTableCrcMismatches": 0,
-      "inGameLoadingVerified": false
+      "inGameLoadingVerified": false,
+      "version": "FC 26",
+      "historical": true
     }
+  },
+  "fc27": {
+    "squad": {
+      "path": "dev/Squads fc27/Squads20261010103923955",
+      "byteLength": 10844447,
+      "sha256": "c0c30bb9c4bc5e451c3db4c744f8c1ef312013d160b419caf37ed7dad00c0143",
+      "databases": 1,
+      "databaseOffsets": [
+        1178
+      ],
+      "tables": 82,
+      "records": 86479,
+      "metadataComplete": true,
+      "warnings": 0,
+      "unchangedSerializationByteIdentical": true,
+      "editedFields": [
+        "players.role9",
+        "players.wage",
+        "players.releaseclause"
+      ],
+      "allRecordsComparedAfterWrite": true,
+      "originalAndEditedDatabaseCrcsVerified": true,
+      "sourceFilePreserved": true,
+      "fileLengthPreserved": true,
+      "databaseOffsetsPreserved": true
+    },
+    "career": {
+      "realSaveAvailable": false,
+      "syntheticContainerUsesFc27Databases": true,
+      "realCareerSectionsVerified": false,
+      "syntheticDatabaseCount": 2,
+      "knownCareerSectionsPreserved": true
+    },
+    "inGameLoadingVerified": false
   }
 }

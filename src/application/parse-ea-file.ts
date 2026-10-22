@@ -3,6 +3,7 @@ import { DecodeBudget, resolveLimits } from '../domain/limits.js';
 import type { EaDatabase, EaFile, EaWarning, FileKind, ParseOptions } from '../domain/models.js';
 import { findDatabase, hasDatabaseSignature, parseDatabase } from '../infrastructure/binary/database-parser.js';
 import { indexMetadata } from '../infrastructure/metadata/schema-index.js';
+import { withFileOperations } from '../services/file-operations/with-file-operations.js';
 
 export function parseEaFile(bytes: Uint8Array, options: ParseOptions = {}): EaFile {
   const limits = resolveLimits(options.limits);
@@ -36,9 +37,9 @@ export function parseEaFile(bytes: Uint8Array, options: ParseOptions = {}): EaFi
     if (standalone) break;
   }
   if (databases.length === 0) throw new EaFileError('INVALID_FORMAT', 'No supported DB database was found.');
-  return { formatVersion: 1, source: { fileName: options.fileName ?? null, byteLength: bytes.byteLength,
+  return withFileOperations({ formatVersion: 1 as const, source: { fileName: options.fileName ?? null, byteLength: bytes.byteLength,
     kind: options.kind ?? detectKind(options.fileName, standalone) }, container: standalone ? 'database' : 'ea-save',
-    inGameName, metadataComplete: databases.every((db) => db.tables.every((table) => table.metadataComplete)), databases, warnings };
+    inGameName, metadataComplete: databases.every((db) => db.tables.every((table) => table.metadataComplete)), databases, warnings });
 }
 
 function detectKind(fileName: string | undefined, standalone: boolean): FileKind {

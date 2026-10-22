@@ -73,3 +73,27 @@ test('integration: transfers a player in the optional local FC 27 squad and rere
   assertCrcs(output, decoded.databases[0]);
   assert.deepEqual(await readFile(squad), bytes);
 });
+
+test('integration: creates a player in the optional local FC 27 squad and rereads every record', {
+  skip: !existsSync(squad),
+}, async () => {
+  const bytes = await readFile(squad);
+  const file = await readEaFile(fileURLToPath(squad), { version: 'FC 27' });
+  const result = file.createPlayer({ firstName: 'João', lastName: 'Validation', teamId: 1,
+    position: 'GK', nationality: 54 }, { randomize: { seed: 42 } });
+  const output = serializeEaFile(bytes, file);
+  const metadata = await loadTemplateMetadata('FC 27');
+  const decoded = parseEaFile(output, { metadata, kind: 'squad' });
+  for (const actual of decoded.databases[0].tables) {
+    const expected = file.databases[0].tables.find(table => table.name === actual.name);
+    assert.deepEqual(actual.records, expected.records);
+  }
+  const player = decoded.databases[0].tables.find(table => table.name === 'players').records.find(row => row.playerid === result.playerId);
+  assert.deepEqual(player, result.player);
+  assert.equal(player.gkreflexes, result.values.gkreflexes);
+  assert.equal(player.preferredposition1, 0);
+  assert.equal(output.length, bytes.length);
+  assert.equal(decoded.databases[0].offset, file.databases[0].offset);
+  assertCrcs(output, decoded.databases[0]);
+  assert.deepEqual(await readFile(squad), bytes);
+});

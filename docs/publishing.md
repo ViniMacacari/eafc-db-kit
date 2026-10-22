@@ -14,7 +14,7 @@ npm run check:package
 
 `check` runs TypeScript checking and the full test suite. `check:package` builds a real tarball in `output/npm/`, verifies its file inventory, and installs it in a temporary consumer project with production dependencies only. It checks public imports, reads all nine bundled database/XML pairs, and compiles a TypeScript consumer against the installed declarations, including the FC 27 types. The temporary consumer is removed after the check; the tarball remains available for inspection. Installing its runtime dependencies requires access to the npm registry or an existing npm cache.
 
-The package includes compiled JavaScript, TypeScript declarations, FIFA/EA FC file services, version-specific transfer services, templates, executable examples, documentation, and the license. Source files, tests, development scripts, local output, the optional C# reference checker, and legacy CLI build artifacts are excluded. The installed-package check reads a database/XML pair through `FifaDatabaseService`, transfers a player, writes and reopens the edited database, and verifies the services' TypeScript declarations.
+The package includes compiled JavaScript, TypeScript declarations, FIFA/EA FC file services, version-specific transfer and creation services, templates, executable examples, documentation, and the license. Source files, tests, development scripts, local output, the optional C# reference checker, and legacy CLI build artifacts are excluded. The installed-package check reads a database/XML pair through `FifaDatabaseService`, transfers and creates players, writes and reopens the edited database, and verifies the services' TypeScript declarations.
 
 To preview publishing without uploading anything:
 

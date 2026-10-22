@@ -1,4 +1,5 @@
 import type { EaFcVersion, TemplateDatabase } from './templates.js';
+import type { FileOperations } from './transfer-models.js';
 
 export type FileKind = 'squad' | 'career' | 'database' | 'unknown';
 export type Endianness = 'little' | 'big';
@@ -69,7 +70,7 @@ export interface EaWarning {
   readonly offset: number;
 }
 
-export interface EaFile {
+export interface EaFileSnapshot {
   readonly formatVersion: 1;
   readonly source: { readonly fileName: string | null; readonly byteLength: number; readonly kind: FileKind };
   readonly container: 'ea-save' | 'database';
@@ -78,6 +79,8 @@ export interface EaFile {
   readonly databases: readonly EaDatabase[];
   readonly warnings: readonly EaWarning[];
 }
+
+export interface EaFile extends EaFileSnapshot, FileOperations {}
 
 export interface ReadLimits {
   readonly maxFileBytes: number;

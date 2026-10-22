@@ -1,11 +1,11 @@
 import { EaFileError } from '../domain/errors.js';
 import { DecodeBudget, resolveLimits } from '../domain/limits.js';
-import type { EaFile, EaTable } from '../domain/models.js';
+import type { EaFileSnapshot, EaTable } from '../domain/models.js';
 import type { SerializeOptions } from '../domain/write-models.js';
 import { encodeDatabase } from '../infrastructure/binary/database-writer.js';
 import { parseEaFile } from './parse-ea-file.js';
 
-export function serializeEaFile(sourceBytes: Uint8Array, file: EaFile, options: SerializeOptions = {}): Uint8Array {
+export function serializeEaFile(sourceBytes: Uint8Array, file: EaFileSnapshot, options: SerializeOptions = {}): Uint8Array {
   try {
     return serialize(sourceBytes, file, options);
   } catch (error) {
@@ -14,7 +14,7 @@ export function serializeEaFile(sourceBytes: Uint8Array, file: EaFile, options: 
   }
 }
 
-function serialize(sourceBytes: Uint8Array, file: EaFile, options: SerializeOptions): Uint8Array {
+function serialize(sourceBytes: Uint8Array, file: EaFileSnapshot, options: SerializeOptions): Uint8Array {
   const limits = resolveLimits(options.limits);
   const integrity = options.saveIntegrity ?? 'invalidate';
   if (integrity !== 'invalidate' && integrity !== 'preserve') throw new EaFileError('INVALID_OPTIONS', 'Invalid saveIntegrity option.');

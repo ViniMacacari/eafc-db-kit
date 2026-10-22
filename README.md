@@ -213,6 +213,48 @@ Existing paths are rejected by default. `overwrite: true` explicitly allows repl
 
 See the [write guide](docs/writing.md) for record insertion and deletion, binary serialization, JSON import, integrity handling, validation rules, filesystem behavior, and compatibility limits.
 
+## Transfer a player
+
+```ts
+import { eaFcFileService } from 'eafc-db-kit';
+
+const source = './Squads';
+const file = await eaFcFileService.read(source, { version: 'FC 27' });
+const transfer = file.transferPlayer(231747, 1, { fromTeamId: 243 });
+await eaFcFileService.write(source, './Squads-edited', file);
+console.log(transfer);
+```
+
+Use `file.transferPlayer(playerId, teamId)` when the player has a single club membership. `fromTeamId` selects one when several club links exist. Read all tables by omitting `tables`. The operation updates club links, shirt numbers, lineups, roles, and loans in memory while preserving national memberships. Save through the usual writer.
+
+The shortcut supports EA FC 25, 26, and 27 squads/databases and compatible FIFA `.db`/XML pairs. Career transfers are not supported. See [player transfers](docs/player-transfers.md) for options, validation, JSON import, and services separated by game version.
+
+## Create a player
+
+```ts
+const result = file.createPlayer({
+  firstName: 'João', lastName: 'Silva', teamId: 1, nationality: 54,
+  position: 'GK', baseRating: 75,
+});
+```
+
+Creation allocates an unused ID by default and uses deterministic values suited to all 28 supported positions. Read all tables, then save with the usual writer. Use `{ autoGenerateId: false }` with `playerId` for a manual ID. Randomization is optional; seeds, accepted fields, numeric ranges, explicit overrides, and a `dryRun` preview are supported. Names, created-player registration, club/national links, active mirrors, and reserve sheets are handled together. Career creation is excluded.
+
+See [player creation](docs/player-creation.md) for full examples, table coverage, position profiles, and version-specific services.
+
+## Create a club
+
+```ts
+const club = file.createClub({
+  name: 'Novo FC', leagueId: 13,
+  colors: ['#123456', '#FFFFFF', '#FFCC00'],
+});
+```
+
+Supply one to three mandatory colors as hex strings or RGB objects. Club IDs and related kit, formation, league, stadium, and manager records are generated automatically, with manual overrides and a `dryRun` preview available. Read all tables and save using the usual writer. The club starts without players; use `createPlayer` or `transferPlayer` with `club.teamId` to build its roster.
+
+The shortcut supports squads and mapped standalone databases. External crests/textures and competition schedules require the game's own tooling; EA FC 25 kits need external textures. See [club creation](docs/club-creation.md) for defaults, manual kits, table coverage, version-specific services, and limits.
+
 ## JSON output and export
 
 Results contain serializable objects and arrays. For moderate output sizes:
@@ -278,6 +320,12 @@ The write example also accepts `--overwrite` and `--save-integrity invalidate|pr
 | `parseCareerData(bytes, options?)` | `CareerData` | Decode career sections without I/O |
 | `rankStandings(standings, groupId)` | `RankedStanding[]` | Rank one group by points, wins, goal difference, and goals |
 | `standingZones(career, groupId)` | `StandingZone[]` | Champion, promotion, relegation, and continental places of one group |
+| `file.transferPlayer(playerId, teamId, options?)` | `TransferPlayerResult` | Transfer a player between clubs in a squad or database in memory |
+| `withFileOperations(snapshot, profile?)` | Snapshot with `FileOperations` | Attach shortcuts to a data snapshot |
+| `PlayerTransferService` | Service class | Apply a transfer directly to a snapshot with a selected game profile |
+| `file.createPlayer(input, options?)` | `CreatePlayerResult` | Create a player and related records in a squad or database |
+| `file.createClub(input, options?)` | `CreateClubResult` | Create a club, kits, and related records in a squad or database |
+| `PlayerCreationService` | Service class | Create a player directly on a snapshot with a selected game profile |
 
 `ReadFileOptions` includes `version`, `database`, `metadata`, `tables`, `fileName`, `kind`, and `limits`. `version` and `metadata` are mutually exclusive. `database` requires `version`. `ReadTemplateOptions` requires `version`. `ParseOptions` accepts `metadata` without loading XML files.
 
@@ -295,7 +343,7 @@ try {
 }
 ```
 
-Errors include `code`, an English `message`, and a byte `offset`, or `null` when no offset applies. Read offsets are absolute positions in the source. Codes: `INVALID_OPTIONS`, `FILE_READ_FAILED`, `FILE_WRITE_FAILED`, `INVALID_WRITE`, `INVALID_METADATA`, `INVALID_FORMAT`, `TRUNCATED_FILE`, `UNSUPPORTED_FIELD_TYPE`, `INVALID_COMPRESSED_STRING`, and `LIMIT_EXCEEDED`.
+Errors include `code`, an English `message`, and a byte `offset`, or `null` when no offset applies. Read offsets are absolute positions in the source. Codes: `INVALID_OPTIONS`, `FILE_READ_FAILED`, `FILE_WRITE_FAILED`, `INVALID_WRITE`, `INVALID_METADATA`, `INVALID_FORMAT`, `TRUNCATED_FILE`, `UNSUPPORTED_FIELD_TYPE`, `INVALID_COMPRESSED_STRING`, `LIMIT_EXCEEDED`, `INVALID_TRANSFER`, `INVALID_PLAYER_CREATION`, and `UNSUPPORTED_OPERATION`.
 
 | Default limit | Value |
 | --- | ---: |
@@ -319,6 +367,9 @@ Override limits with `limits: { maxTotalRecords: 2_000_000 }`. Values must be po
 - `src/infrastructure/filesystem/`: read-only source access and atomic output publication.
 - `src/services/fifa/`: standalone FIFA database/XML reads, writes, and service facade.
 - `src/services/ea-fc/`: EA FC service facade preserving existing application APIs.
+- `src/services/file-operations/`: shortcuts attached to decoded files.
+- `src/services/player-transfer/`: club transfers with separate version adapters and shared roster/sheet services.
+- `src/services/player-creation/`: player creation with separate version adapters, numeric profiles, identity, names, and roster services.
 - `templates/`: FC 25, FC 26, and FC 27 descriptors and databases.
 - `test/`: fixtures and integration tests using bundled templates.
 

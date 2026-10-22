@@ -8,7 +8,11 @@ export type EaFileErrorCode =
   | 'INVALID_COMPRESSED_STRING'
   | 'INVALID_WRITE'
   | 'FILE_WRITE_FAILED'
-  | 'LIMIT_EXCEEDED';
+  | 'LIMIT_EXCEEDED'
+  | 'INVALID_TRANSFER'
+  | 'INVALID_PLAYER_CREATION'
+  | 'INVALID_CLUB_CREATION'
+  | 'UNSUPPORTED_OPERATION';
 
 export class EaFileError extends Error {
   readonly code: EaFileErrorCode;

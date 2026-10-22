@@ -143,8 +143,8 @@
   ],
   "check": {
     "command": "npm run check",
-    "tests": 94,
-    "passed": 94,
+    "tests": 164,
+    "passed": 164,
     "failed": 0,
     "skipped": 0
   },
@@ -164,7 +164,8 @@
       "FifaDatabaseService",
       "EaFcFileService"
     ],
-    "installedFifaPairReadWriteVerified": true
+    "installedFifaPairReadWriteVerified": true,
+    "installedClubCreationVerified": true
   },
   "writing": {
     "binaryWriteTests": 29,
@@ -191,6 +192,65 @@
       "version": "FC 26",
       "historical": true
     }
+  },
+  "playerTransfers": {
+    "scope": ["database", "squad"],
+    "profiles": ["FC 25", "FC 26", "FC 27", "fifa-db", "schema"],
+    "bundledMainDatabaseRoundTrips": 3,
+    "localFc27SquadRoundTrips": 1,
+    "syntheticEndianness": ["little", "big"],
+    "sourceFilesPreserved": true,
+    "nationalMembershipsPreserved": true,
+    "tacticalReferencesUpdated": true,
+    "validationFailuresPreserveInput": true,
+    "jsonSnapshotsSupported": true,
+    "careerTransfersSupported": false,
+    "inGameLoadingVerified": false
+  },
+  "playerCreation": {
+    "scope": ["database", "squad"],
+    "profiles": ["FC 25", "FC 26", "FC 27", "fifa-db", "schema"],
+    "positions": 28,
+    "automaticAndManualIdsVerified": true,
+    "referencedAndAppearanceIdsReserved": true,
+    "deterministicDefaultsVerified": true,
+    "selectiveSeededRandomizationVerified": true,
+    "dryRunPreservesInput": true,
+    "createdAppearanceMorphsVerified": true,
+    "bundledMainDatabaseRoundTrips": 3,
+    "localFc27SquadRoundTrips": 1,
+    "syntheticEndianness": ["little", "big"],
+    "sourceFilesPreserved": true,
+    "validationFailuresPreserveInput": true,
+    "careerCreationSupported": false,
+    "inGameLoadingVerified": false
+  },
+  "clubCreation": {
+    "scope": ["database", "squad"],
+    "profiles": ["FC 25", "FC 26", "FC 27", "fifa-db", "schema"],
+    "mandatoryColorPaletteVerified": true,
+    "maximumColors": 3,
+    "automaticAndManualIdsVerified": true,
+    "referencedIdsReserved": true,
+    "manualKitFormationAndManagerOverridesVerified": true,
+    "defaultKits": 4,
+    "deterministicDefaultsVerified": true,
+    "dryRunPreservesInput": true,
+    "leagueCountryStadiumAndKitLinksVerified": true,
+    "versionSpecificMentalityLayoutsVerified": true,
+    "activeTacticalMirrorsVerified": true,
+    "subsequentPlayerCreationAndTransferVerified": true,
+    "bundledMainDatabaseRoundTrips": 3,
+    "localFc27SquadRoundTrips": 1,
+    "syntheticEndianness": ["little", "big"],
+    "allRecordsComparedAfterWrite": true,
+    "independentCrcsVerified": true,
+    "sourceFilesPreserved": true,
+    "validationFailuresPreserveInput": true,
+    "careerCreationSupported": false,
+    "externalAssetsGenerated": false,
+    "competitionSchedulesRebuilt": false,
+    "inGameLoadingVerified": false
   },
   "fc27": {
     "squad": {

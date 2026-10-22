@@ -1,6 +1,6 @@
 # File services
 
-The package exposes two stateless services with separate input contracts. Both are exported from `eafc-db-kit`. Their implementations live in separate directories; they share the binary DB reader/writer and filesystem utilities.
+The package exposes two stateless file services with separate input contracts. Both are exported from `eafc-db-kit`. Their implementations live in separate directories; they share the binary DB reader/writer and filesystem utilities.
 
 | Service | Input | Schema selection | Use |
 | --- | --- | --- | --- |
@@ -72,6 +72,12 @@ Existing top-level EA FC functions remain available. The new `readFifaDatabase`,
 
 ## Source organization
 
+Decoded files also expose `file.transferPlayer(playerId, teamId, options?)`. This shortcut supports squads and standalone databases, requires all tables to be read, and changes data in memory before an explicit write. See [player transfers](player-transfers.md) for its contract and version-specific service organization. Career transfers are excluded.
+
+`file.createPlayer(input, options?)` creates complete player and related name/roster records with optional ID generation and selective seeded randomization. It has its own `player-creation/` directory and FC 25/26/27/FIFA adapters. See [player creation](player-creation.md) for profiles, previews, table coverage, and saving.
+
+`file.createClub(input, options?)` creates club, kit, formation, league, stadium, manager, and tactical records with automatic or manual IDs. One to three club colors are required. The separate `club-creation/` directory contains FC 25/26/27/FIFA adapters and services for kits, tactics, and club relationships. See [club creation](club-creation.md) for previews, manual options, asset requirements, and saving. Player and club services share a low-level staged record plan in `services/shared/`; their game policies remain separate.
+
 ```text
 src/services/
   fifa/
@@ -83,8 +89,26 @@ src/services/
     database-inputs.ts
   ea-fc/
     ea-fc-file-service.ts
+  file-operations/
+    with-file-operations.ts
+  player-transfer/
+    player-transfer-service.ts
+    fc25/
+    fc26/
+    fc27/
+    fifa/
+    shared/
+  player-creation/
+    player-creation-service.ts
+    fc25/
+    fc26/
+    fc27/
+    fifa/
+    shared/
 src/domain/
   fifa-models.ts
+  transfer-models.ts
+  player-creation-models.ts
 src/infrastructure/
   metadata/fifa-database-metadata.ts
   binary/

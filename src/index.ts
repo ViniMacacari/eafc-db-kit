@@ -37,6 +37,7 @@ export type { EaFileErrorCode } from './domain/errors.js';
 export type { SerializeOptions, WriteFileOptions, WriteFileResult } from './domain/write-models.js';
 export type { EaFile, EaDatabase, EaTable, EaField, EaRecord, EaWarning, Endianness, FieldType,
   FileKind, MetadataField, MetadataTable, MetadataSchema, ParseOptions, ReadFileOptions, ReadTemplateOptions, ReadLimits, RecordValue } from './domain/models.js';
+export type { EaFileSnapshot } from './domain/models.js';
 export { FifaDatabaseService, fifaDatabaseService } from './services/fifa/fifa-database-service.js';
 export { EaFcFileService, eaFcFileService } from './services/ea-fc/ea-fc-file-service.js';
 export { parseFifaDatabase } from './services/fifa/parse-fifa-database.js';
@@ -45,3 +46,17 @@ export { serializeFifaDatabase } from './services/fifa/serialize-fifa-database.j
 export { writeFifaDatabase } from './services/fifa/write-fifa-database.js';
 export type { FifaDatabaseFile, FifaParseOptions, FifaReadOptions, FifaSerializeOptions,
   FifaWriteOptions } from './domain/fifa-models.js';
+export type { FifaDatabaseSnapshot } from './domain/fifa-models.js';
+export type { FileOperations, PlayerTransferProfile, TransferPlayerOptions, TransferPlayerResult,
+  TransferTableChange } from './domain/transfer-models.js';
+export { withFileOperations } from './services/file-operations/with-file-operations.js';
+export { PlayerTransferService } from './services/player-transfer/player-transfer-service.js';
+export { PlayerCreationService } from './services/player-creation/player-creation-service.js';
+export { ClubCreationService } from './services/club-creation/club-creation-service.js';
+export type { RgbColor, ClubColor, ClubColors, ClubCreationProfile, ClubKitType, ClubKitInput, ClubFormationInput,
+  ClubManagerInput, CreateClubInput, CreateClubOptions, CreatedClubKit, ClubCreationTableChange, CreateClubResult,
+  ClubCreationOperations } from './domain/club-creation-models.js';
+export { PLAYER_POSITIONS, PLAYER_ATTRIBUTES } from './domain/player-creation-models.js';
+export type { PlayerPosition, PlayerPositionId, PlayerCreationProfile, PlayerAttribute, RandomizablePlayerField,
+  PlayerCreationValues, PlayerRandomizationOptions, CreatePlayerInput, CreatePlayerOptions, CreatePlayerResult,
+  PlayerCreationTableChange, PlayerCreationOperations } from './domain/player-creation-models.js';

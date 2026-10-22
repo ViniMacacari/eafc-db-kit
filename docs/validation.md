@@ -2,7 +2,7 @@
 
 Integration tests use bundled `templates/` files without external paths. [validation.json](validation.json) records current SHA-256 checksums.
 
-On October 22, 2026, `npm run check` passed type checking, compilation, and **94 tests**, with no failures or skipped tests, including the optional local FC 27 squad and the separate FIFA database services. `npm run check:package` verified the installed package's runtime imports and TypeScript declarations for all three FC versions, FIFA database/XML reads and writes, both service facades, and the template, documentation, and example inventory.
+On October 22, 2026, `npm run check` passed type checking, compilation, and **120 tests**, with no failures or skipped tests, including the optional local FC 27 squad, separate FIFA database services, and player transfers. `npm run check:package` checks the installed package's runtime imports and TypeScript declarations for all three FC versions, FIFA database/XML reads and writes, file services, player transfers, and the template, documentation, and example inventory.
 
 | Version | Database | Bytes | Tables | Valid records |
 | --- | --- | ---: | ---: | ---: |
@@ -25,6 +25,8 @@ All databases were fully decoded using matching XML descriptors, with complete m
 - Version and database selection from the local catalog.
 - External FIFA database/XML pairs, complete mappings even with filtered reads, changed XML mappings, protected outputs, and the executable team-editing example.
 - Separate FIFA/EA FC service contracts and preserved literal-version inference.
+- Player transfers with version-specific adapters, club/national memberships, shirt numbers, source selection, lineups, tactical player references, roles, loans, mirror links, and validation before changes are applied.
+- Transfer serialization with both byte orders, standalone database/XML pairs, squad containers, JSON snapshots, and the installed npm package.
 - Complete reads of all nine bundled databases and comparison of every binary table and field with the matching XML descriptor.
 - Generated record types, metadata inference, database-specific options, and field/table differences across FC 25, FC 26, and FC 27.
 - Template resolution from different working directories.
@@ -71,6 +73,12 @@ The supplied extensionless squad contains 10,844,447 bytes and one embedded data
 A mandatory synthetic career test embeds two FC 27 main databases alongside the existing career-section fixture. It checks file-based version selection, edits to FC 27 player fields, unchanged serialization, a second untouched database, database CRCs, stable database offsets, and byte-preserved career sections after writing.
 
 No real FC 27 career save was supplied. This test covers the known container and section format with FC 27 databases; it does not establish FC 27-specific competition/statistics layouts or missing career table schemas. Several FC 26 career tables are absent from the supplied FC 27 XML, so their types are not inferred from older versions. See the [FC 27 type guide](fc27-types.md).
+
+## Player transfers
+
+Transfer integration tests move player `231747` from team `243` to team `1` in the bundled FC 25, FC 26, and FC 27 main databases. Each result is serialized and reread; all changed table records and the player record are compared, retained memberships are checked, and independent CRC calculations validate the output. Source database bytes remain unchanged. The optional real FC 27 squad receives the same transfer, with every table's records compared after writing and its container length and database offset preserved.
+
+Synthetic fixtures exercise mapped FIFA `.db`/XML pairs and squad containers in both byte orders, including removal of a loan and updates to mirror links and tactical sheets. Validation tests check that errors leave the input unchanged. The package checker transfers through an installed package and verifies the written destination membership. See [player transfers](player-transfers.md) for supported tables and limits. Career transfers and loading edited transfers in the game have not been verified or enabled.
 
 ## Evidence limits
 

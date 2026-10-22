@@ -111,8 +111,8 @@ export const playerField: Fc25FieldName<'players'> = 'overallrating';
 export const fc25 = await readTemplateDatabase({ version: 'FC 25', tables: ['teams'] });
 const teams = fc25.databases.flatMap(db => db.tables).find(table => table.name === 'teams');
 export const teamName: string | undefined = teams?.records[0]?.teamname;
-// @ts-expect-error Generated records reject unknown field names.
-teams?.records[0]?.teamnane;
+export const rejectsUnknownTeamField:
+  'teamnane' extends keyof NonNullable<typeof teams>['records'][number] ? never : true = true;
 export const localization = await readTemplateDatabase({ version: 'FC 25', database: 'localization' });
 export const strings: readonly Fc25LocalizationRecords['LanguageStrings1'][] | undefined =
   localization.databases[0]?.tables.find(table => table.name === 'LanguageStrings1')?.records;

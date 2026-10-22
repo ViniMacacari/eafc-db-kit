@@ -1,12 +1,12 @@
 import { EaFileError } from '../../domain/errors.js';
-import type { FifaDatabaseFile, FifaSerializeOptions } from '../../domain/fifa-models.js';
+import type { FifaDatabaseSnapshot, FifaSerializeOptions } from '../../domain/fifa-models.js';
 import { DecodeBudget, resolveLimits } from '../../domain/limits.js';
 import { parseDatabase } from '../../infrastructure/binary/database-parser.js';
 import { encodeDatabase } from '../../infrastructure/binary/database-writer.js';
 import { fifaMetadata, inspectFifaDatabase, validateFifaRecordMapping } from '../../infrastructure/metadata/fifa-database-metadata.js';
 import { fifaOptions } from './database-inputs.js';
 
-export function serializeFifaDatabase(bytes: Uint8Array, xml: string, file: FifaDatabaseFile,
+export function serializeFifaDatabase(bytes: Uint8Array, xml: string, file: FifaDatabaseSnapshot,
   options: FifaSerializeOptions = {}): Uint8Array {
   try {
     return serialize(bytes, xml, file, options);
@@ -16,7 +16,7 @@ export function serializeFifaDatabase(bytes: Uint8Array, xml: string, file: Fifa
   }
 }
 
-function serialize(bytes: Uint8Array, xml: string, file: FifaDatabaseFile, options: FifaSerializeOptions): Uint8Array {
+function serialize(bytes: Uint8Array, xml: string, file: FifaDatabaseSnapshot, options: FifaSerializeOptions): Uint8Array {
   fifaOptions(options, ['limits']);
   const limits = resolveLimits(options.limits);
   const metadata = fifaMetadata(xml, limits.maxFileBytes);

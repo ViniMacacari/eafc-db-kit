@@ -3,5 +3,6 @@ dist/
 coverage/
 output/
 *.tsbuildinfo
+*.tgz
 tests
 settings

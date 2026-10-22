@@ -5,7 +5,7 @@ A career save stores more than its two DB databases. After the last database, th
 `readCareerData` and `parseCareerData` decode them. Both are read-only and independent from `readEaFile`, so a caller can read databases and career data from the same file without decoding it twice.
 
 ```ts
-import { readCareerData, readEaFile, rankStandings } from 'api-eafc-files';
+import { readCareerData, readEaFile, rankStandings } from 'eafc-db-kit';
 
 const path = 'C:/saves/CmMgrC20261011025536442';
 const career = await readCareerData(path);

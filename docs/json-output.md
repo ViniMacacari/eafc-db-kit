@@ -1,6 +1,6 @@
 # JSON structure
 
-The enumerable data returned by `readEaFile` and `parseEaFile` contains objects, arrays, strings, finite numbers, booleans, and `null`. Results contain no `Buffer`, `BigInt`, `Map`, or record class instances. Non-enumerable `transferPlayer` and `createPlayer` methods expose [player transfers](player-transfers.md) and [player creation](player-creation.md); both are omitted by JSON serialization and incremental exports.
+The enumerable data returned by `readEaFile` and `parseEaFile` contains objects, arrays, strings, finite numbers, booleans, and `null`. Results contain no `Buffer`, `BigInt`, `Map`, or record class instances. Non-enumerable `transferPlayer`, `createPlayer`, and `createClub` methods expose [player transfers](player-transfers.md), [player creation](player-creation.md), and [club creation](club-creation.md); all are omitted by JSON serialization and incremental exports.
 
 `EaFileSnapshot` and `FifaDatabaseSnapshot` describe data without attached operations. Writers accept these snapshots. JSON imports, object spread, and `structuredClone` omit the methods; use `withFileOperations(snapshot, 'FC 27')` to attach both again. The operation profile is not persisted in JSON.
 

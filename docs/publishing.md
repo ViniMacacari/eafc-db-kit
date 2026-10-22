@@ -12,7 +12,7 @@ npm run check
 npm run check:package
 ```
 
-`check` runs TypeScript checking and the full test suite. `check:package` builds a real tarball in `output/npm/`, verifies its file inventory, and installs it in a temporary consumer project with production dependencies only. It checks public imports, reads all six bundled database/XML pairs, and compiles a TypeScript consumer against the installed declarations. The temporary consumer is removed after the check; the tarball remains available for inspection. Installing its runtime dependencies requires access to the npm registry or an existing npm cache.
+`check` runs TypeScript checking and the full test suite. `check:package` builds a real tarball in `output/npm/`, verifies its file inventory, and installs it in a temporary consumer project with production dependencies only. It checks public imports, reads all nine bundled database/XML pairs, and compiles a TypeScript consumer against the installed declarations, including the FC 27 types. The temporary consumer is removed after the check; the tarball remains available for inspection. Installing its runtime dependencies requires access to the npm registry or an existing npm cache.
 
 The package includes compiled JavaScript, TypeScript declarations, templates, executable examples, documentation, and the license. Source files, tests, development scripts, local output, and legacy CLI build artifacts are excluded.
 

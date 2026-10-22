@@ -1,6 +1,6 @@
 # File services
 
-The package exposes two stateless services with separate input contracts. Both are exported from `eafc-db-kit`. Their implementations live in separate directories; they share the binary DB reader/writer and filesystem utilities.
+The package exposes two stateless file services with separate input contracts. Both are exported from `eafc-db-kit`. Their implementations live in separate directories; they share the binary DB reader/writer and filesystem utilities.
 
 | Service | Input | Schema selection | Use |
 | --- | --- | --- | --- |
@@ -72,6 +72,8 @@ Existing top-level EA FC functions remain available. The new `readFifaDatabase`,
 
 ## Source organization
 
+Decoded files also expose `file.transferPlayer(playerId, teamId, options?)`. This shortcut supports squads and standalone databases, requires all tables to be read, and changes data in memory before an explicit write. See [player transfers](player-transfers.md) for its contract and version-specific service organization. Career transfers are excluded.
+
 ```text
 src/services/
   fifa/
@@ -83,8 +85,18 @@ src/services/
     database-inputs.ts
   ea-fc/
     ea-fc-file-service.ts
+  file-operations/
+    with-file-operations.ts
+  player-transfer/
+    player-transfer-service.ts
+    fc25/
+    fc26/
+    fc27/
+    fifa/
+    shared/
 src/domain/
   fifa-models.ts
+  transfer-models.ts
 src/infrastructure/
   metadata/fifa-database-metadata.ts
   binary/

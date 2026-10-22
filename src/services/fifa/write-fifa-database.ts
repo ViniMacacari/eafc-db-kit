@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 import { EaFileError } from '../../domain/errors.js';
-import type { FifaDatabaseFile, FifaWriteOptions } from '../../domain/fifa-models.js';
+import type { FifaDatabaseSnapshot, FifaWriteOptions } from '../../domain/fifa-models.js';
 import { resolveLimits } from '../../domain/limits.js';
 import type { WriteFileResult } from '../../domain/write-models.js';
 import { atomicWriteFile } from '../../infrastructure/filesystem/atomic-write-file.js';
@@ -8,7 +8,7 @@ import { fifaOptions, fifaPath, readFifaInputs } from './database-inputs.js';
 import { serializeFifaDatabase } from './serialize-fifa-database.js';
 
 export async function writeFifaDatabase(databasePath: string, xmlPath: string, outputPath: string,
-  file: FifaDatabaseFile, options: FifaWriteOptions = {}): Promise<WriteFileResult> {
+  file: FifaDatabaseSnapshot, options: FifaWriteOptions = {}): Promise<WriteFileResult> {
   fifaOptions(options, ['limits', 'overwrite']);
   fifaPath(databasePath, 'Database path');
   fifaPath(xmlPath, 'XML path');

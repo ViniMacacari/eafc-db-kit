@@ -185,7 +185,7 @@ The original binary is still required for saving. Fixed save allocations can lim
 
 ## Services, snapshots, and tests
 
-`createPlayer` is non-enumerable, like `transferPlayer`. JSON exports and `structuredClone` contain only data. Use `withFileOperations(snapshot, 'FC 27')` to restore both shortcuts, or call `new PlayerCreationService('FC 27').create(snapshot, input, options)` directly.
+`createPlayer` is non-enumerable, like `transferPlayer` and `createClub`. JSON exports and `structuredClone` contain only data. Use `withFileOperations(snapshot, 'FC 27')` to restore the shortcuts, or call `new PlayerCreationService('FC 27').create(snapshot, input, options)` directly. Newly created clubs can be used as destinations; see [club creation](club-creation.md).
 
 ```text
 src/services/player-creation/
@@ -205,7 +205,7 @@ src/services/player-creation/
 src/domain/player-creation-models.ts
 ```
 
-Version adapters define reference seasons and appearance defaults. Shared services own argument validation, numeric profiles/randomization, identity and names, complete player records, roster/sheet insertion, and applying the validated plan.
+Version adapters define reference seasons and appearance defaults. Shared services own argument validation, numeric profiles/randomization, identity and names, complete player records, roster/sheet insertion, and applying the validated plan. `creation-plan.ts` wraps the low-level `services/shared/record-creation-plan.ts` validator also used by club creation, preserving player-specific errors.
 
 `INVALID_OPTIONS` reports malformed inputs or options. `INVALID_PLAYER_CREATION` reports data conflicts, invalid mapped values, unavailable IDs/numbers, or exhausted squads/names. `UNSUPPORTED_OPERATION` reports careers, filtered/unmapped data, or unsupported schemas. Binary writes retain their own error codes and protections.
 

@@ -143,8 +143,8 @@
   ],
   "check": {
     "command": "npm run check",
-    "tests": 120,
-    "passed": 120,
+    "tests": 146,
+    "passed": 146,
     "failed": 0,
     "skipped": 0
   },
@@ -204,6 +204,24 @@
     "validationFailuresPreserveInput": true,
     "jsonSnapshotsSupported": true,
     "careerTransfersSupported": false,
+    "inGameLoadingVerified": false
+  },
+  "playerCreation": {
+    "scope": ["database", "squad"],
+    "profiles": ["FC 25", "FC 26", "FC 27", "fifa-db", "schema"],
+    "positions": 28,
+    "automaticAndManualIdsVerified": true,
+    "referencedAndAppearanceIdsReserved": true,
+    "deterministicDefaultsVerified": true,
+    "selectiveSeededRandomizationVerified": true,
+    "dryRunPreservesInput": true,
+    "createdAppearanceMorphsVerified": true,
+    "bundledMainDatabaseRoundTrips": 3,
+    "localFc27SquadRoundTrips": 1,
+    "syntheticEndianness": ["little", "big"],
+    "sourceFilesPreserved": true,
+    "validationFailuresPreserveInput": true,
+    "careerCreationSupported": false,
     "inGameLoadingVerified": false
   },
   "fc27": {

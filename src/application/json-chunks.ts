@@ -1,6 +1,6 @@
-import type { EaFile } from '../domain/models.js';
+import type { EaFileSnapshot } from '../domain/models.js';
 
-export function* eaFileJsonChunks(file: EaFile): Generator<string, void, undefined> {
+export function* eaFileJsonChunks(file: EaFileSnapshot): Generator<string, void, undefined> {
   const { databases, ...header } = file;
   yield `${JSON.stringify(header).slice(0, -1)},"databases":[`;
   for (let dbIndex = 0; dbIndex < databases.length; dbIndex++) {

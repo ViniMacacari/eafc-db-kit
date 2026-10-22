@@ -34,3 +34,5 @@ Bundled databases can also be used as source binaries for the [write API](../doc
 Names and ranges depend on the version. The API cannot automatically detect a save from another version that reuses the same field codes. Use `SUPPORTED_VERSIONS` and `TEMPLATE_DATABASES` to inspect available options.
 
 To add a version, include its files and update `src/domain/templates.ts`, integration tests, and the validation inventory. Current file checksums are recorded in `docs/validation.json`.
+
+FC 25 also has generated TypeScript record types and complete table/field catalogs. After changing its descriptors, run `npm run generate:fc25`. See the [FC 25 type guide](../docs/fc25-types.md).

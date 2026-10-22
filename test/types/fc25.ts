@@ -2,7 +2,8 @@ import { loadTemplateMetadata, parseEaFile, readEaFile, readTemplateDatabase, wr
   type EaFile, type ReadFileOptions, type TemplateDatabase, type EaFcVersion,
   type Fc25Record, type Fc25FieldName, type Fc25TableName, type Fc25TableShortName,
   type Fc25MainRecords, type Fc25FutRecords, type Fc25LocalizationRecords,
-  type Fc25File, type Fc25Metadata, type Fc25ReadFileOptions, type Fc25ReadTemplateOptions } from '../../src/index.js';
+  type Fc25File, type Fc25Metadata, type Fc25ReadFileOptions, type Fc25ReadTemplateOptions,
+  type Fc26File } from '../../src/index.js';
 
 type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
 type Assert<T extends true> = T;
@@ -78,13 +79,13 @@ export async function broadReads(path: string, version: EaFcVersion, database: T
   const custom = await readEaFile(path, { metadata: { tables: [] } });
   const unknownDb = await readTemplateDatabase({ version: 'FC 25', database });
   const inferredUnknownDb: Assert<Equal<typeof unknownDb, Fc25File<TemplateDatabase>>> = true;
-  const fc26IsGeneric: Assert<Equal<typeof fc26, EaFile>> = true;
+  const fc26IsTyped: Assert<Equal<typeof fc26, Fc26File<'main'>>> = true;
   const unknownVersionIsGeneric: Assert<Equal<typeof unknownVersion, EaFile>> = true;
   const genericOptionsStayGeneric: Assert<Equal<typeof generic, EaFile>> = true;
   const main = await readTemplateDatabase({ version: 'FC 25', tables: ['unknown-table-filter'] });
   const options = { version: 'FC 25', tables: ['players'] } satisfies Fc25ReadFileOptions;
   const templateOptions = { version: 'FC 25', database: 'fut', tables: ['players'] } satisfies Fc25ReadTemplateOptions<'fut'>;
-  return { unknownVersion, fc26, generic, raw, custom, unknownDb, inferredUnknownDb, fc26IsGeneric,
+  return { unknownVersion, fc26, generic, raw, custom, unknownDb, inferredUnknownDb, fc26IsTyped,
     unknownVersionIsGeneric, genericOptionsStayGeneric, main, options, templateOptions };
 }
 

@@ -52,6 +52,10 @@ export type { FileOperations, PlayerTransferProfile, TransferPlayerOptions, Tran
 export { withFileOperations } from './services/file-operations/with-file-operations.js';
 export { PlayerTransferService } from './services/player-transfer/player-transfer-service.js';
 export { PlayerCreationService } from './services/player-creation/player-creation-service.js';
+export { ClubCreationService } from './services/club-creation/club-creation-service.js';
+export type { RgbColor, ClubColor, ClubColors, ClubCreationProfile, ClubKitType, ClubKitInput, ClubFormationInput,
+  ClubManagerInput, CreateClubInput, CreateClubOptions, CreatedClubKit, ClubCreationTableChange, CreateClubResult,
+  ClubCreationOperations } from './domain/club-creation-models.js';
 export { PLAYER_POSITIONS, PLAYER_ATTRIBUTES } from './domain/player-creation-models.js';
 export type { PlayerPosition, PlayerPositionId, PlayerCreationProfile, PlayerAttribute, RandomizablePlayerField,
   PlayerCreationValues, PlayerRandomizationOptions, CreatePlayerInput, CreatePlayerOptions, CreatePlayerResult,

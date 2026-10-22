@@ -2,7 +2,7 @@
 
 Integration tests use bundled `templates/` files without external paths. [validation.json](validation.json) records current SHA-256 checksums.
 
-On October 22, 2026, `npm run check` passed type checking, compilation, and **80 tests**, with no failures or skipped tests, including the optional local FC 27 squad. `npm run check:package` verified the installed package's runtime imports and TypeScript declarations for all three versions, alongside the template, documentation, and example inventory.
+On October 22, 2026, `npm run check` passed type checking, compilation, and **94 tests**, with no failures or skipped tests, including the optional local FC 27 squad and the separate FIFA database services. `npm run check:package` verified the installed package's runtime imports and TypeScript declarations for all three FC versions, FIFA database/XML reads and writes, both service facades, and the template, documentation, and example inventory.
 
 | Version | Database | Bytes | Tables | Valid records |
 | --- | --- | ---: | ---: | ---: |
@@ -23,6 +23,8 @@ All databases were fully decoded using matching XML descriptors, with complete m
 `npm run check` runs type checking, compilation, and tests covering:
 
 - Version and database selection from the local catalog.
+- External FIFA database/XML pairs, complete mappings even with filtered reads, changed XML mappings, protected outputs, and the executable team-editing example.
+- Separate FIFA/EA FC service contracts and preserved literal-version inference.
 - Complete reads of all nine bundled databases and comparison of every binary table and field with the matching XML descriptor.
 - Generated record types, metadata inference, database-specific options, and field/table differences across FC 25, FC 26, and FC 27.
 - Template resolution from different working directories.
@@ -48,6 +50,19 @@ All databases were fully decoded using matching XML descriptors, with complete m
 All nine bundled databases were edited and fully decoded again. Source template files remained byte-identical after these checks.
 
 Template integrations are mandatory because templates are part of the project. Template changes require updating the inventory and integration expectations. The private FC 27 squad check in `test/fc27.test.mjs` runs when `dev/Squads fc27/Squads20261010103923955` exists and is otherwise skipped. Files in `dev/` are excluded from the repository and npm package.
+
+## FIFA database/XML interoperability
+
+The optional [C# reference checker](fifa-databases.md#tests-and-c-interoperability) compared two local pairs against the `FifaLibrary14.dll` dependency used by the supplied DB Master project. Results and SHA-256 hashes are recorded in [fifa-validation.json](fifa-validation.json).
+
+| Database | Bytes | Tables | Valid records | Edited field |
+| --- | ---: | ---: | ---: | --- |
+| Main database | 30,465,772 | 242 | 277,150 | `teams.teamname` |
+| Portuguese localization | 7,297,420 | 2 | 97,241 | `LanguageStrings1.sourcetext` |
+
+For each pair, original table counts and the first/last records of every table matched the C# reader. Every record written by C# was compared with the TypeScript read. A TypeScript edit was serialized and fully read again, every returned record was compared, and the output was reopened by C# with matching counts and samples. Both source database and XML hashes matched after the completed checks. All C# save operations use temporary copies because that DLL recalculates CRCs against its loaded file path. Temporary binaries are removed.
+
+These local pairs and the C# DLL are not bundled or required by the ordinary test suite or npm runtime. The supported shared DB signature was verified; a FIFA edition was not inferred. Interoperability checks do not establish support for every FIFA release or loading edited files in a game. See [FIFA databases](fifa-databases.md) for the exact layout and mapping contract.
 
 ## FC 27 saves
 

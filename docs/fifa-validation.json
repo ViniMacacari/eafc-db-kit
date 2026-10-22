@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-22",
+  "node": "v24.15.0",
+  "reference": {
+    "project": "DB Master",
+    "dependency": "FifaLibrary14.dll",
+    "assemblySha256": "b0abb228f0a5358ff814028a713c4e9170cc6bdedcb227f26082cd4ed91390d1",
+    "sourceFormat": "DB signature 44 42 00 08",
+    "gameEditionInferred": false,
+    "allCsharpCallsUseTemporaryCopies": true
+  },
+  "resources": [
+    {
+      "database": "fifa_ng_db.db",
+      "xml": "fifa_ng_db-meta.xml",
+      "sha256": "38a0725ec133f4189d3ba7857af6f884a6885f6eb83c38dd289736cd48a82fa0",
+      "metadataSha256": "11094aae4c9973481bacead607725efc19fddf87989c5d4f2d218c3cf7c089e1",
+      "tables": 242,
+      "records": 277150,
+      "editedTable": "teams",
+      "editedField": "teamname",
+      "originalSamplesMatchCsharp": true,
+      "allCsharpOutputRecordsMatch": true,
+      "allTypescriptOutputRecordsMatch": true,
+      "typescriptOutputReopenedByCsharp": true,
+      "sourceDatabasePreserved": true,
+      "sourceXmlPreserved": true,
+      "byteLength": 30465772,
+      "metadataByteLength": 1392988
+    },
+    {
+      "database": "por_br.DB",
+      "xml": "por_br-meta.XML",
+      "sha256": "351f63942f6781c51aba654b6b016b669c9443ed961854804741f7d0c07811e8",
+      "metadataSha256": "9875781b6eac633c7eda6d972f291bb10cfce37d387794faa7a330b0d158f7fd",
+      "tables": 2,
+      "records": 97241,
+      "editedTable": "LanguageStrings1",
+      "editedField": "sourcetext",
+      "originalSamplesMatchCsharp": true,
+      "allCsharpOutputRecordsMatch": true,
+      "allTypescriptOutputRecordsMatch": true,
+      "typescriptOutputReopenedByCsharp": true,
+      "sourceDatabasePreserved": true,
+      "sourceXmlPreserved": true,
+      "byteLength": 7297420,
+      "metadataByteLength": 1598
+    }
+  ],
+  "inGameLoadingVerified": false
+}

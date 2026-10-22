@@ -4,6 +4,8 @@
 
 This contract can also be passed to `serializeEaFile` or `writeEaFile` after editing records. Preserve field descriptors and the source envelope. The original binary is required to retain data outside the JSON contract. See [writing](writing.md) for examples and source compatibility rules. The writer does not update bookkeeping properties in the supplied object; read the output to obtain current offsets and counts.
 
+`FifaDatabaseService.read` and `.parse` use the same nested database/table/record structure with an additional top-level `format: 'fifa-db'` discriminator. A FIFA result always has one standalone database, `source.kind: 'database'`, `container: 'database'`, `inGameName: null`, and `metadataComplete: true`. Preserve the discriminator when exporting or importing JSON. Its write/serialize methods require both the original database and the XML mapping; see [FIFA databases](fifa-databases.md).
+
 ```json
 {
   "formatVersion": 1,

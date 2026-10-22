@@ -51,3 +51,8 @@ export type { FileOperations, PlayerTransferProfile, TransferPlayerOptions, Tran
   TransferTableChange } from './domain/transfer-models.js';
 export { withFileOperations } from './services/file-operations/with-file-operations.js';
 export { PlayerTransferService } from './services/player-transfer/player-transfer-service.js';
+export { PlayerCreationService } from './services/player-creation/player-creation-service.js';
+export { PLAYER_POSITIONS, PLAYER_ATTRIBUTES } from './domain/player-creation-models.js';
+export type { PlayerPosition, PlayerPositionId, PlayerCreationProfile, PlayerAttribute, RandomizablePlayerField,
+  PlayerCreationValues, PlayerRandomizationOptions, CreatePlayerInput, CreatePlayerOptions, CreatePlayerResult,
+  PlayerCreationTableChange, PlayerCreationOperations } from './domain/player-creation-models.js';

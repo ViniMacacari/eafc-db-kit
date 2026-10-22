@@ -13,6 +13,9 @@ const fixtures = [
   { version: 'FC 26', database: 'fut', bytes: 38118380, tables: 244, records: 308211 },
   { version: 'FC 25', database: 'localization', bytes: 6874244, tables: 2, records: 95376 },
   { version: 'FC 26', database: 'localization', bytes: 7273216, tables: 2, records: 100057 },
+  { version: 'FC 27', database: 'main', bytes: 16206784, tables: 268, records: 245469 },
+  { version: 'FC 27', database: 'fut', bytes: 15654852, tables: 229, records: 214004 },
+  { version: 'FC 27', database: 'localization', bytes: 8537808, tables: 2, records: 115843 },
 ];
 
 async function assertTemplateSchema(version, database, decoded) {
@@ -69,7 +72,7 @@ for (const fixture of fixtures) {
 }
 
 test('catalog exposes only bundled versions and databases', () => {
-  assert.deepEqual(SUPPORTED_VERSIONS, ['FC 25', 'FC 26']);
+  assert.deepEqual(SUPPORTED_VERSIONS, ['FC 25', 'FC 26', 'FC 27']);
   assert.deepEqual(TEMPLATE_DATABASES, ['main', 'fut', 'localization']);
   assert.ok(Object.isFrozen(SUPPORTED_VERSIONS));
 });

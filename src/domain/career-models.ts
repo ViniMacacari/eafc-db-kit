@@ -42,6 +42,8 @@ export interface FixtureSide {
   readonly penalties: number | null;
 }
 
+export type FixtureDecision = 'regularTime' | 'extraTime' | 'penalties';
+
 export interface Fixture {
   readonly index: number;
   readonly competitionId: number;
@@ -50,6 +52,7 @@ export interface Fixture {
   readonly date: number;
   readonly time: number;
   readonly played: boolean;
+  readonly decision: FixtureDecision | null;
   readonly home: FixtureSide;
   readonly away: FixtureSide;
 }

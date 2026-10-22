@@ -40,14 +40,14 @@ function standing(index, group, team, slot, home, away, points) {
   return record;
 }
 
-function fixture(index, competitionId, round, date, time, home, away, played) {
+function fixture(index, competitionId, round, date, time, home, away, status) {
   const record = Buffer.alloc(22);
   record.set([0xff, 0x01]);
   record.writeUInt16LE(index, 2); record.writeUInt16LE(competitionId, 4); record[6] = round;
   record.writeUInt32LE(date, 7); record.writeUInt16LE(time, 11);
-  record.writeUInt16LE(home[0], 13); record[15] = home[1]; record[16] = 0xff;
-  record.writeUInt16LE(away[0], 17); record[19] = away[1]; record[20] = 0xff;
-  record[21] = played ? 1 : 0;
+  record.writeUInt16LE(home[0], 13); record[15] = home[1]; record[16] = home[2] ?? 0xff;
+  record.writeUInt16LE(away[0], 17); record[19] = away[1]; record[20] = away[2] ?? 0xff;
+  record[21] = status;
   return record;
 }
 
@@ -139,8 +139,10 @@ export function makeCareer() {
     standing(4, 99, -1, 0, [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], 0),
   ]);
   const fixtures = Buffer.concat([
-    fixture(1, 12, 1, 20280126, 1930, [1, 3], [3, 1], true),
-    fixture(2, 12, 2, 20280202, 1600, [2, 0], [1, 0], false),
+    fixture(1, 12, 1, 20280126, 1930, [1, 3], [3, 1], 1),
+    fixture(2, 12, 2, 20280202, 1600, [2, 0], [1, 0], 0),
+    fixture(3, 12, 3, 20280209, 2000, [3, 2], [2, 1], 2),
+    fixture(4, 12, 4, 20280216, 2145, [1, 2, 3], [2, 2, 1], 3),
   ]);
   return Buffer.concat([
     makeSave([makeDatabase()]),
@@ -205,15 +207,26 @@ test('ranks a group by points, wins, goal difference, and goals scored', () => {
 
 test('decodes played and scheduled fixtures through standing slots', () => {
   const { fixtures } = parseCareerData(makeCareer());
-  assert.equal(fixtures.length, 2);
+  assert.equal(fixtures.length, 4);
   assert.deepEqual(fixtures[0], {
-    index: 1, competitionId: 12, groupId: 14, round: 1, date: 20280126, time: 1930, played: true,
+    index: 1, competitionId: 12, groupId: 14, round: 1, date: 20280126, time: 1930, played: true, decision: 'regularTime',
     home: { standingIndex: 1, teamId: 100, goals: 3, penalties: null },
     away: { standingIndex: 3, teamId: 300, goals: 1, penalties: null },
   });
   assert.equal(fixtures[1].played, false);
+  assert.equal(fixtures[1].decision, null);
   assert.equal(fixtures[1].home.goals, null);
   assert.equal(fixtures[1].away.teamId, 100);
+});
+
+test('keeps matches decided in extra time or on penalties', () => {
+  const { fixtures } = parseCareerData(makeCareer());
+  assert.deepEqual(fixtures.slice(2).map(item => [item.index, item.played, item.decision]), [
+    [3, true, 'extraTime'], [4, true, 'penalties'],
+  ]);
+  assert.deepEqual(fixtures[2].home, { standingIndex: 3, teamId: 300, goals: 2, penalties: null });
+  assert.deepEqual(fixtures[3].home, { standingIndex: 1, teamId: 100, goals: 2, penalties: 3 });
+  assert.deepEqual(fixtures[3].away, { standingIndex: 2, teamId: 200, goals: 2, penalties: 1 });
 });
 
 test('decodes player statistics per competition', () => {
@@ -274,7 +287,7 @@ test('reads career data from disk with the file name', async () => {
     await writeFile(path, makeCareer());
     const career = await readCareerData(path);
     assert.equal(career.source.fileName, 'CmMgrC20280126');
-    assert.equal(career.fixtures.length, 2);
+    assert.equal(career.fixtures.length, 4);
     await assert.rejects(readCareerData(join(directory, 'missing')), code('FILE_READ_FAILED'));
   } finally {
     await rm(directory, { recursive: true, force: true });

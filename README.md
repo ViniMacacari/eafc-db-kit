@@ -1,10 +1,20 @@
-# api-eafc-files
+# eafc-db-kit
 
 A TypeScript API for reading and writing EA FC squads, career saves, and databases through JSON-compatible objects. XML descriptors and database templates are bundled in `templates/`. Reading opens inputs in read-only mode; writing creates a new output unless replacement is explicitly requested. The library does not start a server.
 
-## Setup
+## Installation
 
-Requires Node.js 24 or later. Run these commands from `api-eafc-files`:
+Requires Node.js 24 or later. This package uses ES modules.
+
+```sh
+npm install eafc-db-kit
+```
+
+The npm package includes compiled JavaScript, TypeScript declarations, and the bundled `templates/`. Consumers do not need TypeScript or a build step. Template paths are resolved relative to the installed module, independently of the working directory.
+
+## Development
+
+From a source checkout:
 
 ```powershell
 npm ci
@@ -12,12 +22,12 @@ npm run build
 npm run check
 ```
 
-The build produces ESM JavaScript and TypeScript declarations in `dist/`. `dist/` is not committed: the `prepare` script builds it when the package is installed from Git (`npm install github:ViniMacacari/api-eafc-files`). Generated code has no comments. The package includes `dist/` and `templates/`; template paths are resolved relative to the module, independently of the working directory.
+The build produces ESM JavaScript and TypeScript declarations in `dist/`. `dist/` is not committed: the `prepare` script builds it for local installs, Git installs, and packaging. Generated code has no comments. See the [publishing guide](docs/publishing.md) for package verification and npm release commands.
 
 ## Read a squad or career save
 
 ```ts
-import { readEaFile, SUPPORTED_VERSIONS } from './api-eafc-files/dist/index.js';
+import { readEaFile, SUPPORTED_VERSIONS } from 'eafc-db-kit';
 
 console.log(SUPPORTED_VERSIONS);
 
@@ -62,7 +72,7 @@ const fut = await readEaFile('C:/saves/FutSquads20261009', {
 ### Read bundled databases
 
 ```ts
-import { readTemplateDatabase } from './api-eafc-files/dist/index.js';
+import { readTemplateDatabase } from 'eafc-db-kit';
 
 const teams = await readTemplateDatabase({
   version: 'FC 26',
@@ -85,7 +95,7 @@ These calls load matching database and XML files from the package. No external i
 
 ```ts
 import { readFile } from 'node:fs/promises';
-import { loadTemplateMetadata, parseEaFile } from './api-eafc-files/dist/index.js';
+import { loadTemplateMetadata, parseEaFile } from 'eafc-db-kit';
 
 const metadata = await loadTemplateMetadata('FC 26');
 const bytes = await readFile('C:/saves/file.squad');
@@ -101,7 +111,7 @@ For custom descriptors, use `parseMetadataXml(xml)` and pass the result as `meta
 Career saves also keep the live league tables, the season schedule with results, the competition tree, and season statistics for every player outside the databases. `leagueteamlinks` does not contain the live table and `teamplayerlinks` does not contain season statistics.
 
 ```ts
-import { readCareerData, rankStandings, standingZones } from './api-eafc-files/dist/index.js';
+import { readCareerData, rankStandings, standingZones } from 'eafc-db-kit';
 
 const career = await readCareerData('C:/saves/CmMgrC20261009');
 const table = rankStandings(career.standings, 1530);
@@ -117,7 +127,7 @@ See [career data](docs/career-data.md) for linking groups to `career_users.prima
 ## Edit and write a file
 
 ```ts
-import { readEaFile, writeEaFile } from './api-eafc-files/dist/index.js';
+import { readEaFile, writeEaFile } from 'eafc-db-kit';
 
 const source = 'C:/saves/file.squad';
 const data = await readEaFile(source, { version: 'FC 26', tables: ['teams'] });
@@ -154,7 +164,7 @@ For large results, use incremental serialization:
 import { createWriteStream } from 'node:fs';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import { eaFileJsonChunks, readTemplateDatabase } from './api-eafc-files/dist/index.js';
+import { eaFileJsonChunks, readTemplateDatabase } from 'eafc-db-kit';
 
 const data = await readTemplateDatabase({ version: 'FC 26' });
 await pipeline(
@@ -165,7 +175,7 @@ await pipeline(
 
 The generator avoids creating one string for the entire result. The input binary and decoded objects still remain in memory. Filter tables when only part of the database is needed.
 
-The executable example also accepts a version:
+From a source checkout, the executable example also accepts a version:
 
 ```powershell
 node examples/read-file.mjs `
@@ -175,7 +185,7 @@ node examples/read-file.mjs `
 
 Options: `--version`, `--database`, and `--output`. Without `--output`, JSON is written to stdout. Without a version, the example performs a raw read. Export creates a new file and rejects existing paths. The program exits after reading.
 
-Import an edited JSON snapshot and create a binary file:
+From a source checkout, import an edited JSON snapshot and create a binary file:
 
 ```powershell
 npm run write -- "C:/saves/file.squad" edited.json "C:/saves/edited.squad"
@@ -205,7 +215,7 @@ The write example also accepts `--overwrite` and `--save-integrity invalidate|pr
 `SerializeOptions` includes `limits` and `saveIntegrity`, defaulting to `'invalidate'`. `WriteFileOptions` also includes `overwrite`, defaulting to `false`. The write options do not accept descriptor paths or a version; descriptors come from the read result.
 
 ```ts
-import { EaFileError, readEaFile } from './api-eafc-files/dist/index.js';
+import { EaFileError, readEaFile } from 'eafc-db-kit';
 
 try {
   const data = await readEaFile('C:/saves/file.squad', { version: 'FC 26' });
@@ -244,3 +254,7 @@ Override limits with `limits: { maxTotalRecords: 2_000_000 }`. Values must be po
 The library has no mutable global state or external program dependency. TypeScript enables `strict`, `noUncheckedIndexedAccess`, and `exactOptionalPropertyTypes`. Development references: [TypeScript configuration](https://www.typescriptlang.org/tsconfig/noUncheckedIndexedAccess.html) and [Node.js test runner](https://nodejs.org/api/test.html).
 
 Further documentation: [career data](docs/career-data.md), [writing](docs/writing.md), [JSON structure](docs/json-output.md), [binary format](docs/binary-format.md), [templates](templates/README.md), and [validation](docs/validation.md).
+
+## License
+
+[MIT](LICENSE).

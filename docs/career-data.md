@@ -5,7 +5,7 @@ A career save stores more than its two DB databases. After the last database, th
 `readCareerData` and `parseCareerData` decode them. Both are read-only and independent from `readEaFile`, so a caller can read databases and career data from the same file without decoding it twice.
 
 ```ts
-import { readCareerData, readEaFile, rankStandings } from 'api-eafc-files';
+import { readCareerData, readEaFile, rankStandings } from 'eafc-db-kit';
 
 const path = 'C:/saves/CmMgrC20261011025536442';
 const career = await readCareerData(path);
@@ -39,7 +39,7 @@ Options accept `fileName` and `limits`. `maxFileBytes` and `maxTotalRecords` app
   "standings": [{ "index": 4698, "groupId": 1530, "teamId": 598, "slot": 13,
     "home": { "wins": 9, "draws": 2, "losses": 1, "goalsFor": 41, "goalsAgainst": 14 },
     "away": { "wins": 6, "draws": 2, "losses": 3, "goalsFor": 28, "goalsAgainst": 18 }, "points": 49 }],
-  "fixtures": [{ "index": 1813, "competitionId": 1528, "groupId": 1530, "round": 24, "date": 20280820, "time": 1930, "played": false,
+  "fixtures": [{ "index": 1813, "competitionId": 1528, "groupId": 1530, "round": 24, "date": 20280820, "time": 1930, "played": false, "decision": null,
     "home": { "standingIndex": 4696, "teamId": 1048, "goals": null, "penalties": null },
     "away": { "standingIndex": 4698, "teamId": 598, "goals": null, "penalties": null } }],
   "playerStats": [{ "index": 15727, "playerId": 240332, "teamId": 598, "competitionId": 1528,
@@ -67,7 +67,7 @@ One entry per team slot of every group, including empty slots of stages not draw
 
 ### Fixtures
 
-Each fixture references both sides through `standingIndex`, which is how teams are resolved (`teamId`) and how `groupId` is set. `round` is the matchday inside the stage. `date` is `yyyyMMdd` and `time` is `HHmm`. `goals` and `penalties` are `null` for matches not yet played or without a shootout.
+Each fixture references both sides through `standingIndex`, which is how teams are resolved (`teamId`) and how `groupId` is set. `round` is the matchday inside the stage. `date` is `yyyyMMdd` and `time` is `HHmm`. `goals` and `penalties` are `null` for matches not yet played or without a shootout. `decision` tells how a played match ended: `regularTime`, `extraTime` or `penalties`; it is `null` for matches not yet played.
 
 ### Player statistics
 
@@ -112,7 +112,7 @@ Each block is followed by a tag with a little-endian UInt32 name length and the 
 | Block | Between tags | Record | Layout |
 | --- | --- | ---: | --- |
 | Competition tree | `compavg` … `compobj` | 49 bytes | `FF 01`, UInt16 id, UInt16 id, UInt8 level, UInt16 parent, 7-byte code, 33-byte name key |
-| Fixtures | `teams` … `fixture` | 22 bytes | `FF 01`, UInt16 index, UInt16 competition, UInt8 round, UInt32 date, UInt16 time, UInt16 home slot, UInt8 home goals, UInt8 home penalties, UInt16 away slot, UInt8 away goals, UInt8 away penalties, UInt8 played |
+| Fixtures | `teams` … `fixture` | 22 bytes | `FF 01`, UInt16 index, UInt16 competition, UInt8 round, UInt32 date, UInt16 time, UInt16 home slot, UInt8 home goals, UInt8 home penalties, UInt16 away slot, UInt8 away goals, UInt8 away penalties, UInt8 status (0 not played, 1 regular time, 2 extra time, 3 penalties) |
 | Standings | `stagadv` … `stndgs` | 23 bytes | `FF 01`, UInt16 index (1-based, sequential), UInt16 group, Int32 team, UInt8 slot, five UInt8 home values, five UInt8 away values (W, D, L, GF, GA), UInt8 points, UInt8 reserved |
 | Player statistics | `stndgs` … `stats` | 73 bytes | `01 01`, then bit fields described below; 24,000 slots, empty slots have a zero key |
 | Season tasks | `sched` … `script` | 19 bytes | `01`, UInt16 competition, UInt8 action, UInt16 target, UInt16 source, UInt16 parameter, Int32 first, Int32 second, `FF` |
@@ -146,6 +146,8 @@ Other blocks (`advance`, `sched`, `objctvs`, `deepsim`, ...) are listed in `sect
 ## Evidence
 
 The layout was reverse-engineered from FC 26 saves and is not documented by EA. It was checked against two independent careers (a 20-team league and a 96-team league split in 16 groups) and a backup slot: every fixture referenced a known standing slot, and each club's fixtures summed exactly to its standing totals.
+
+The fixture status was checked across all fixtures of two careers: status 3 always has both penalty scores, and status 2 only appears in knockout rounds and second legs, always without penalties and with a one-goal or larger margin.
 
 Player statistics were checked the same way. In 7,327 records whose five match entries cover the whole competition, appearances, minutes, goals and rating sums equal the sum of the entries. Across a 20-team league, player goals equal team goals for 17 teams, and goalkeepers' goals conceded and clean sheets equal the team figures for 18. Between two saves of the same career, every changed record belonged to a player of a team that played in between. Per-match values matched an external match export for 25 players.
 

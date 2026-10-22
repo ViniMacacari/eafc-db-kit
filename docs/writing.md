@@ -5,7 +5,7 @@ The write API edits a file that the reader already understands. It accepts the o
 ## File workflow
 
 ```ts
-import { readEaFile, writeEaFile } from '../dist/index.js';
+import { readEaFile, writeEaFile } from 'eafc-db-kit';
 
 const source = 'C:/saves/CmMgrC20261009';
 const data = await readEaFile(source, {
@@ -54,7 +54,7 @@ The filesystem must support hard links for exclusive publication and replacement
 Existing record values can be assigned directly. Arrays and structural properties are read-only in the TypeScript contract; use object spreads when changing a record collection:
 
 ```ts
-import type { EaFile, EaRecord } from '../dist/index.js';
+import type { EaFile, EaRecord } from 'eafc-db-kit';
 
 const originalPlayer = players.records[0];
 if (!originalPlayer) throw new Error('No player records were found.');
@@ -103,7 +103,7 @@ For another edit of the written file, re-read it first. The writer does not muta
 
 ```ts
 import { readFile } from 'node:fs/promises';
-import { loadTemplateMetadata, parseEaFile, serializeEaFile } from '../dist/index.js';
+import { loadTemplateMetadata, parseEaFile, serializeEaFile } from 'eafc-db-kit';
 
 const sourceBytes = await readFile('C:/saves/file.squad');
 const metadata = await loadTemplateMetadata('FC 26');
@@ -124,8 +124,8 @@ An unchanged snapshot produces byte-identical output, including existing CRCs an
 
 ```ts
 import { readFile } from 'node:fs/promises';
-import { writeEaFile } from '../dist/index.js';
-import type { EaFile } from '../dist/index.js';
+import { writeEaFile } from 'eafc-db-kit';
+import type { EaFile } from 'eafc-db-kit';
 
 const edited = JSON.parse(await readFile('edited.json', 'utf8')) as EaFile;
 await writeEaFile('C:/saves/file.squad', 'C:/saves/edited.squad', edited);
@@ -133,7 +133,7 @@ await writeEaFile('C:/saves/file.squad', 'C:/saves/edited.squad', edited);
 
 The cast does not validate JSON. The writer validates file structure, records, field values, and source compatibility at runtime. JSON must retain the complete `EaFile` envelope from a read or export, including database identity, selected table descriptors, and source byte length. Opaque container bytes are not present in JSON, so the original binary remains required.
 
-The matching command-line workflow is:
+From a source checkout, the matching command-line workflow is:
 
 ```powershell
 npm run read -- "C:/saves/file.squad" --version "FC 26" teams --output teams.json

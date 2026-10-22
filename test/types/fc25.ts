@@ -15,6 +15,18 @@ export type DateIsNumber = Assert<Equal<Fc25Record<'players'>['birthdate'], numb
 export type StringIsString = Assert<Equal<Fc25Record<'teams'>['teamname'], string>>;
 export type FlagIsNumber = Assert<Equal<Fc25Record<'players'>['gender'], number>>;
 export type FloatMayBeNull = Assert<Equal<Fc25Record<'attributecategorymap'>['weight'], number | null>>;
+export type NumericPlayerFieldRejectsString = Assert<Equal<string extends Fc25Record<'players'>['overallrating'] ? true : false, false>>;
+export type UnknownPlayerFieldRejected = Assert<Equal<'overalrating' extends keyof Fc25Record<'players'> ? true : false, false>>;
+export type PlayerDateRejectsDateObject = Assert<Equal<Extract<Fc25Record<'players'>['birthdate'], Date>, never>>;
+export type TeamNameRejectsNumber = Assert<Equal<number extends Fc25Record<'teams'>['teamname'] ? true : false, false>>;
+export type LocalizationRejectsPlayerId = Assert<Equal<'playerid' extends keyof Fc25LocalizationRecords['LanguageStrings1'] ? true : false, false>>;
+export type MainRejectsLocalizationTables = Assert<Equal<'LanguageStrings1' extends Fc25TableName ? true : false, false>>;
+export type FutOptionsRequireDatabase = Assert<Equal<{ version: 'FC 25' } extends Fc25ReadFileOptions<'fut'> ? true : false, false>>;
+export type LocalizationOptionsRequireDatabase = Assert<Equal<{ version: 'FC 25' } extends Fc25ReadTemplateOptions<'localization'> ? true : false, false>>;
+export type UnknownTableRejected = Assert<Equal<'playres' extends Fc25TableName ? true : false, false>>;
+export type UnknownFieldRejected = Assert<Equal<'overalrating' extends Fc25FieldName<'players'> ? true : false, false>>;
+export type FutReaderRequiresDatabase = Assert<Equal<{ version: 'FC 25' } extends Parameters<typeof readEaFile<'fut'>>[1] ? true : false, false>>;
+export type FutMetadataRequiresDatabase = Assert<Equal<['FC 25'] extends Parameters<typeof loadTemplateMetadata<'fut'>> ? true : false, false>>;
 
 export async function inferredReads(path: string) {
   const file = await readEaFile(path, { version: 'FC 25', tables: ['players', 'teams'] });
@@ -25,19 +37,11 @@ export async function inferredReads(path: string) {
     const id: number = player.playerid;
     const birthdate: number = player.birthdate;
     player.overallrating = 90;
-    // @ts-expect-error Numeric fields do not accept strings.
-    player.overallrating = '90';
-    // @ts-expect-error Unknown fields must not fall back to an index signature.
-    player.overalrating;
-    // @ts-expect-error Date fields retain their encoded numeric representation.
-    const date: Date = player.birthdate;
-    void [id, birthdate, date];
+    void [id, birthdate];
   }
   if (teams?.records[0]) {
     const name: string = teams.records[0].teamname;
-    // @ts-expect-error teamname is a string.
-    const invalidName: number = teams.records[0].teamname;
-    void [name, invalidName];
+    void name;
   }
   const generic: EaFile = file;
   const inferredMain: Assert<Equal<typeof file, Fc25File<'main'>>> = true;
@@ -57,12 +61,8 @@ export async function templateReads() {
   if (first) {
     const text: string = first.sourcetext;
     const hash: number = first.hashid;
-    // @ts-expect-error Localization rows do not contain player IDs.
-    first.playerid;
     void [text, hash];
   }
-  // @ts-expect-error The main database does not contain localization tables.
-  main.databases[0]?.tables.find(table => table.name === 'LanguageStrings1');
   const metadata = await loadTemplateMetadata('FC 25', 'localization');
   const table = metadata.tables.find(item => item.name === 'LanguageStrings1');
   const field: 'hashid' | 'sourcetext' | 'stringid' | undefined = table?.fields[0]?.name;
@@ -91,25 +91,11 @@ export async function broadReads(path: string, version: EaFcVersion, database: T
 export const tableName: Fc25TableName = 'players';
 export const fieldName: Fc25FieldName<'players'> = 'playerid';
 export const shortName: Fc25TableShortName = 'CZUM';
-// @ts-expect-error A FUT schema requires an explicit FUT database option.
-export const missingFutDatabase: Fc25ReadFileOptions<'fut'> = { version: 'FC 25' };
-// @ts-expect-error A localization schema requires an explicit localization option.
-export const missingLocalizationDatabase: Fc25ReadTemplateOptions<'localization'> = { version: 'FC 25' };
-// @ts-expect-error Unknown table names are not part of the generated schema.
-export const wrongTable: Fc25TableName = 'playres';
-// @ts-expect-error Unknown field names are not part of a player record.
-export const wrongField: Fc25FieldName<'players'> = 'overalrating';
-// @ts-expect-error Generic record lookups reject tables outside the chosen database.
-export type WrongRecord = Fc25Record<'LanguageStrings1'>;
 
-export async function optionalDatabases(path: string, database: 'fut' | undefined) {
+export async function optionalDatabases(database: 'fut' | undefined) {
   const metadata = await loadTemplateMetadata('FC 25', database);
   const optionalDbIsUnion: Assert<Equal<typeof metadata, Fc25Metadata<'main' | 'fut'>>> = true;
   const mainMetadata = await loadTemplateMetadata('FC 25', undefined);
   const defaultDbIsMain: Assert<Equal<typeof mainMetadata, Fc25Metadata<'main'>>> = true;
-  // @ts-expect-error Selecting the FUT type cannot omit its database at runtime.
-  await readEaFile<'fut'>(path, { version: 'FC 25' });
-  // @ts-expect-error Selecting the FUT metadata type cannot omit its database argument.
-  await loadTemplateMetadata<'fut'>('FC 25');
   return { metadata, optionalDbIsUnion, mainMetadata, defaultDbIsMain };
 }

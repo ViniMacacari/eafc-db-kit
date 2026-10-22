@@ -143,8 +143,8 @@
   ],
   "check": {
     "command": "npm run check",
-    "tests": 94,
-    "passed": 94,
+    "tests": 120,
+    "passed": 120,
     "failed": 0,
     "skipped": 0
   },
@@ -191,6 +191,20 @@
       "version": "FC 26",
       "historical": true
     }
+  },
+  "playerTransfers": {
+    "scope": ["database", "squad"],
+    "profiles": ["FC 25", "FC 26", "FC 27", "fifa-db", "schema"],
+    "bundledMainDatabaseRoundTrips": 3,
+    "localFc27SquadRoundTrips": 1,
+    "syntheticEndianness": ["little", "big"],
+    "sourceFilesPreserved": true,
+    "nationalMembershipsPreserved": true,
+    "tacticalReferencesUpdated": true,
+    "validationFailuresPreserveInput": true,
+    "jsonSnapshotsSupported": true,
+    "careerTransfersSupported": false,
+    "inGameLoadingVerified": false
   },
   "fc27": {
     "squad": {

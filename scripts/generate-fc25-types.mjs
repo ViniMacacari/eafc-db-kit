@@ -54,12 +54,7 @@ for (const database of databases) {
   })).sort(byName);
   assert.equal(new Set(tables.map(table => table.name)).size, tables.length, 'Duplicate table names.');
   const prefix = `Fc25${database.title}`;
-  const lines = [
-    `// Generated from ${source}. Do not edit by hand.`,
-    '// Regenerate with npm run generate:fc25.',
-    '',
-    `export type ${prefix}Records = {`,
-  ];
+  const lines = [`export type ${prefix}Records = {`];
   for (const table of tables) {
     assert.equal(new Set(table.fields.map(field => field.name)).size, table.fields.length,
       `Duplicate fields in ${table.name}.`);
